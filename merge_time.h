@@ -17,7 +17,9 @@
 #include <vector>
 
 #include "gnu_merge_without_buffer.h"
-#include "merge.h"
+#include "merge_without_buffer.h"
+#include "merge_without_buffer_trim2.h"
+#include "merge_without_buffer_trim1.h"
 #include "random_helpers.h"
 
 template<class T> std::chrono::nanoseconds TimeStdInplaceMergeWithOutBufferOnGivenVec(std::vector<T> &vec, const std::vector<T> &vec_original, std::size_t start_second, std::size_t num_repititions = 1) {
