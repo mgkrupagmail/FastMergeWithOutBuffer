@@ -22,10 +22,6 @@
  *  [start_left : end_right] this function will try function will try to
  *  increase start_left and decrease end_right as much as possible using only
  *  simple comparisons and switches near the ends of these two subintervals.
- * NOTE/REMINDER: Up to 10 - 20% of all elements may (depending on certain
- *  vec's size and range of values) be correctly placed by calling this
- *  function within side your primary merging algorithm (at the appropriate
- *  location).
  * Assumes that both [start_left : end_left] and [start_right : end_right] are
  *  sorted in increasing order, and that
  *  start_left <= end_left == start_right - 1 < start_right <= end_right
@@ -34,15 +30,9 @@
  * If *end_left <= *start_right then we make the intervals invalid. i.e.
  *  start_left_out = start_right; end_right_out = end_left;
  * After execution completes [initial_start_left : end_left] and
- *  vec[start_right : initial_end_right] will both still be increasing
+ *  [start_right : initial_end_right] will both still be increasing
  *  (where initial_start_left and initial_end_right refer to the values of
  *   start_left and end_right when this function is first entered).
- *
- * After execution, any elements inside [start_left + 2 : end_left - 2]
- *  (if any exist) will NOT have been moved or altered.
- * The same is true for elements inside [start_right + 2 : end_right - 2].
- * If at any point any one of the subintervals becomes <= 2 in length then
- *  it will return.
  *
  * If after execution completes both subranges have size >= 3, (i.e.
  *  start_right - start_left >= 3 and end_left + 1 - start_right >= 3)
