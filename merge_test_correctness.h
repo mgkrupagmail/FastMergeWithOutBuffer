@@ -12,6 +12,8 @@
 
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
+#include <string>
 #include <vector>
 
 #include "random_helpers.h"
@@ -32,6 +34,78 @@ bool IsNonDecreasing(ForwardIterator start_it, ForwardIterator one_past_last) {
   }
   return true;
 }
+
+inline void PrintLine(const std::string str, const int num_repetitions) {
+  for (auto i = 0; i < num_repetitions; i++)
+    std::cout << str;
+  std::cout << std::endl;
+  return ;
+}
+
+
+template<class RAI>
+std::string GetNondecreasingSubsequences(RAI start, std::size_t length) {
+  std::size_t count_width = 1;
+  std::size_t num = 0;
+  auto it = start;
+  while (num + 1 < length) {
+    std::size_t count = 1;
+    if (*it > *(it + 1)) {
+      it++;
+      num++;
+      continue;
+    }
+    //Count how many elements are in the current monotone subequence.
+    while (num + 1 < length && *it <= *(it + 1)) {
+      it++;
+      num++;
+      count++;
+    }
+    auto cur_count_length = std::to_string(count).length();
+    if (count_width < cur_count_length)
+      count_width = cur_count_length;
+  }
+
+  num = 0;
+  it = start;
+  std::stringstream strm;
+  while (num < length) {
+    auto cur_it       = it;
+    auto cur_num      = num;
+    std::size_t count = 1;
+    //Count how many elements are in the current monotone subequence.
+    while (cur_num + 1 < length && *cur_it <= *(cur_it + 1)) {
+      cur_it++;
+      cur_num++;
+      count++;
+    }
+    strm << std::left << std::setw(count_width) << count << "|";
+    strm << ' ' << *it;
+    num++;
+    while (num < length && *it <= *(it + 1)) {
+      it++;
+      strm << ' ' << *it;
+      num++;
+    }
+    it++;
+    strm << '\n';
+  }
+  return strm.str();
+}
+
+#define PRINT_SUBSEQUENCES_DEFAULT_OSTRM std::cout
+
+template<class RAI>
+void PrintNondecreasingSubsequences(RAI start, std::size_t length,
+                                    bool print_new_line_at_end = true,
+                        std::ostream &ostrm = PRINT_SUBSEQUENCES_DEFAULT_OSTRM) {
+  ostrm << GetNondecreasingSubsequences(start, length);
+  if (print_new_line_at_end)
+    ostrm << '\n';
+  ostrm.flush();
+}
+#undef PRINT_SUBSEQUENCES_DEFAULT_OSTRM
+
 
 /* Assumes that start_left <= start_right
  * If the test fails then vec_that_it_failed_on will be set equal to the
@@ -95,12 +169,12 @@ assert(!(end_right   <= end_left  && end_right   >= start_left)); //end_right   
   auto vec = vec_original;
 
   if (verbose) {
-    printhelpers::PrintLine("_", 80, true);
+    PrintLine("_", 80);
     std::cout << "start_left = "     << start_left << "\tend_left =\t" << end_left
               << "\tstart_right =\t" << start_right
               << "\tend_right =\t"   << end_right  << std::endl;
-    printhelpers::PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left, false);
-    printhelpers::PrintNondecreasingSubsequences(vec.begin() + start_right, length_right, true);
+    PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left, false);
+    PrintNondecreasingSubsequences(vec.begin() + start_right, length_right, true);
   }
 
   const int original_start_left   = start_left;
@@ -111,13 +185,13 @@ assert(!(end_right   <= end_left  && end_right   >= start_left)); //end_right   
   const int original_length_right = length_right;
 
   if (verbose) {
-    printhelpers::PrintLine("_", 80, true);
+    PrintLine("_", 80);
     std::cout << "start_left = "     << start_left << "\tend_left =\t" << end_left
               << "\tstart_right =\t" << start_right
               << "\tend_right =\t"   << end_right  << std::endl;
-    printhelpers::PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left, false);
-    printhelpers::PrintNondecreasingSubsequences(vec.begin() + start_right, length_right, true);
-    printhelpers::PrintLine("-", 80, true);
+    PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left, false);
+    PrintNondecreasingSubsequences(vec.begin() + start_right, length_right, true);
+    PrintLine("-", 80);
 
   }
 
@@ -126,29 +200,29 @@ assert(!(end_right   <= end_left  && end_right   >= start_left)); //end_right   
   bool is_left_non_decreasing  = IsNonDecreasing(vec.begin() + original_start_left,  vec.begin() + original_end_left);
   bool is_right_non_decreasing = IsNonDecreasing(vec.begin() + original_start_right, vec.begin() + original_end_right);
   if (!(is_left_non_decreasing && is_right_non_decreasing && vec[end_left] <= vec[start_right])) {
-    printhelpers::PrintLine("-", 80, true);
+    PrintLine("-", 80);
     std::cout << "Something went wrong when merging these vectors:" << std::endl;
-    printhelpers::PrintNondecreasingSubsequences(vec_original.begin() + original_start_left,  original_length_left, false);
-    printhelpers::PrintNondecreasingSubsequences(vec_original.begin() + original_start_right, original_length_right, true);
+    PrintNondecreasingSubsequences(vec_original.begin() + original_start_left,  original_length_left, false);
+    PrintNondecreasingSubsequences(vec_original.begin() + original_start_right, original_length_right, true);
     std::cout << "These were the resulting vectors:" << std::endl;
-    printhelpers::PrintNondecreasingSubsequences(vec.begin() + original_start_left,  original_length_left, false);
-    printhelpers::PrintNondecreasingSubsequences(vec.begin() + original_start_right, original_length_right, true);
+    PrintNondecreasingSubsequences(vec.begin() + original_start_left,  original_length_left, false);
+    PrintNondecreasingSubsequences(vec.begin() + original_start_right, original_length_right, true);
     std::cout << "start_left = "     << start_left << "\tend_left =\t" << end_left
               << "\tstart_right =\t" << start_right
               << "\tend_right =\t"   << end_right  << std::endl;
-    printhelpers::PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left, false);
-    printhelpers::PrintNondecreasingSubsequences(vec.begin() + start_right, length_right, true);
-    printhelpers::PrintLine("-", 80, true);
+    PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left, false);
+    PrintNondecreasingSubsequences(vec.begin() + start_right, length_right, true);
+    PrintLine("-", 80);
     vec_that_it_failed_on = std::move(vec_original);
     return false;
   }
   if (verbose) {
-    printhelpers::PrintLine("_", 80, true);
+    PrintLine("_", 80);
     std::cout << "start_left = "     << start_left << "\tend_left =\t" << end_left
               << "\tstart_right =\t" << start_right
               << "\tend_right =\t"   << end_right  << std::endl;
-    printhelpers::PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left, false);
-    printhelpers::PrintNondecreasingSubsequences(vec.begin() + start_right, length_right, true);
+    PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left, false);
+    PrintNondecreasingSubsequences(vec.begin() + start_right, length_right, true);
 
   }
   return true;
@@ -225,8 +299,8 @@ bool TestCorrectnessOfMerge(int vec_size,
       while (start_right < vec_size && any_vec_object[start_right - 1] <= any_vec_object[start_right])
         start_right++;
       auto iter = any_vec_object.begin();
-      printhelpers::PrintNondecreasingSubsequences(iter, start_right);
-      printhelpers::PrintNondecreasingSubsequences(iter + start_right, vec_size - start_right);
+      PrintNondecreasingSubsequences(iter, start_right);
+      PrintNondecreasingSubsequences(iter + start_right, vec_size - start_right);
       return false;
     }
   }
