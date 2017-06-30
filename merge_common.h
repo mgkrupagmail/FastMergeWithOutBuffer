@@ -2,7 +2,7 @@
  * merge_common.h
  *
  *  Created on: Jun 29, 2017
- *      Author: diagoras
+ *      Author: Matthew Gregory Krupa
  */
 
 #ifndef SRC_MERGE_COMMON_H_
