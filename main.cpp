@@ -8,6 +8,7 @@
 #include "merge_without_buffer.h"
 #include "merge_test_correctness.h"
 #include "merge_time.h"
+
 int main() {
   //Calling TestCorrectnessOfMerge()
   int vec_size_start = 2;
@@ -32,4 +33,5 @@ int main() {
                     0, 100 * vec_size);
   return 0;
 }
+
 
