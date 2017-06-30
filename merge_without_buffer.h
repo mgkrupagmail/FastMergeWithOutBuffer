@@ -18,7 +18,7 @@
 
 #include "merge_common.h"
 
-/* Given two sorted intervals of values that are contiguous in memory as
+/* Given two sorted ranges of values that are contiguous in memory as
  *  [start_left : end_right] this function will try function will try to
  *  increase start_left and decrease end_right as much as possible using only
  *  simple comparisons and switches near the ends of these two subintervals.
