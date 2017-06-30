@@ -45,7 +45,8 @@
  *   start_right < end_right).
  */
 template<class T>
-void TrimEnds1(T &start_left_out, T &end_left_out, T &start_right_out, T &end_right_out) {
+void TrimEnds1(T &start_left_out,  T &end_left_out,
+               T &start_right_out, T &end_right_out) {
   auto start_left  = start_left_out,  end_left  = end_left_out;
   auto start_right = start_right_out, end_right = end_right_out;
   bool is_trivial = false;
@@ -57,31 +58,35 @@ void TrimEnds1(T &start_left_out, T &end_left_out, T &start_right_out, T &end_ri
       end_right_out    = end_right;
       return ;
     }
-    if (*start_left <= *start_right) {//If true, then this implies that start_left < end_left
-      start_left = SmallestIteratorWithValueGreaterThan_KnownToExist(start_left + 1, end_left, *start_right);
-    }
-    if (*end_right >= *end_left) {
-      end_right = LargestIteratorWithValueLessThan_KnownToExist(start_right, end_right - 1, *end_left);
-    }
-    if (*start_left >= *end_right
-        || start_left >= end_left || start_right >= end_right) {
+    //If true, then this implies that start_left < end_left
+    if (*start_left <= *start_right)
+      start_left = SmallestIteratorWithValueGreaterThan_KnownToExist(
+                                       start_left + 1, end_left, *start_right);
+    if (*end_right >= *end_left)
+      end_right = LargestIteratorWithValueLessThan_KnownToExist(start_right,
+                                                     end_right - 1, *end_left);
+    if (*start_left >= *end_right || start_left >= end_left
+        || start_right >= end_right) {
       is_trivial = true;
       break;
     }
     //Note that at this point,
     // 1) both length_left and length_right are >= 2, and
     // 2) *end_left > *end_right > *start_left > *start_right.
+
     auto length_left  = std::distance(start_left, end_left + 1);
     auto length_right = std::distance(start_right, end_right + 1);
-    if (length_left <= length_right && *start_left >= *(start_right + length_left - 1)) {
+    if (length_left <= length_right && *start_left >=
+                                            *(start_right + length_left - 1)) {
       std::swap_ranges(start_left, end_left + 1, start_right);
       start_left   = start_right;
       start_right += length_left;
       end_left    += length_left;
       continue ;
     }
-    if (length_left >= length_right && *(end_left - (length_right - 1)) >= *end_right) {
-      std::swap_ranges(start_right, end_right + 1, end_left - (length_right - 1));
+    if (length_left >= length_right && *(end_left - (length_right - 1)) >=
+                                                                  *end_right) {
+      std::swap_ranges(start_right, end_right + 1, end_left - (length_right-1));
       end_left   -= length_right;
       start_right = end_left + 1;
       end_right   = start_right + (length_right - 1);
@@ -91,7 +96,8 @@ void TrimEnds1(T &start_left_out, T &end_left_out, T &start_right_out, T &end_ri
   }
 
   if (is_trivial) {
-    MergeTrivialCases(start_left, end_left, start_right, end_right, &start_left_out, &end_right_out);
+    MergeTrivialCases(start_left, end_left, start_right, end_right,
+                      &start_left_out, &end_right_out);
     start_left_out   = end_left + 1;
     end_left_out     = end_left;
     start_right_out  = end_right + 1;
@@ -107,14 +113,16 @@ void TrimEnds1(T &start_left_out, T &end_left_out, T &start_right_out, T &end_ri
 
 //Assumes that start_left <= start_right
 template<class RAI>
-void MergeWithOutBufferTrim1(RAI start_left, RAI end_left, RAI start_right, RAI end_right) {
+void MergeWithOutBufferTrim1(RAI start_left,  RAI end_left,
+                             RAI start_right, RAI end_right) {
   int length_left, length_right, length_smaller, d;
   TrimEnds1(start_left, end_left, start_right, end_right);
   length_left  = std::distance(start_left, end_left + 1);
   length_right = std::distance(start_right, end_right + 1);
   length_smaller = length_left < length_right ? length_left : length_right;
   //Check for triviality.
-  if (start_left > end_left || start_right > end_right || *end_left <= *start_right)
+  if (start_left > end_left || start_right > end_right
+      || *end_left <= *start_right)
     return ;
   if (length_smaller <= 1) {
     if (length_smaller <= 0)
@@ -125,12 +133,15 @@ void MergeWithOutBufferTrim1(RAI start_left, RAI end_left, RAI start_right, RAI 
       return ;
     }
   }
-  d = DisplacementFromMiddleIiteratorToPotentialMediansContiguous_KnownToExist(end_left, length_smaller);
+  d = DisplacementFromMiddleIiteratorToPotentialMediansContiguous_KnownToExist(
+                                                      end_left, length_smaller);
   auto start_2nd_quarter = end_left - (d - 1);
   std::swap_ranges(start_2nd_quarter, end_left + 1, start_right);
   auto start_4th_quarter = start_right + d;
-  MergeWithOutBufferTrim1(start_left, start_2nd_quarter - 1, start_2nd_quarter, end_left);
-  MergeWithOutBufferTrim1(start_right, start_4th_quarter - 1, start_4th_quarter, end_right);
+  MergeWithOutBufferTrim1(start_left, start_2nd_quarter - 1, start_2nd_quarter,
+                          end_left);
+  MergeWithOutBufferTrim1(start_right, start_4th_quarter - 1, start_4th_quarter,
+                          end_right);
   return ;
 }
 
