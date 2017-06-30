@@ -2,7 +2,7 @@
  * trim_ends.h
  *
  *  Created on: Jun 29, 2017
- *      Author: diagoras
+ *      Author: Matthew Gregory Krupa
  */
 
 #ifndef SRC_TRIM_ENDS_H_
