@@ -8,8 +8,6 @@
 #ifndef SRC_MERGE_COMMON_H_
 #define SRC_MERGE_COMMON_H_
 
-#include <cassert>
-
 /* Finds the SMALLEST integer  0 <= d < length IF it exists such that
  *  (*) *(end_left - d) <= *(start_right + d), and
  *  otherwise, if such a d does NOT exist then it returns length - 1.
@@ -224,7 +222,5 @@ void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_right,
   *end_right_out  = start_right;
   return ;
 }
-
-
 
 #endif /* SRC_MERGE_COMMON_H_ */
