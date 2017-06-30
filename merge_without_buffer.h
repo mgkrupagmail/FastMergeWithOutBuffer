@@ -3,6 +3,8 @@
  *
  *  Created on: Jun 29, 2017
  *      Author: Matthew Gregory Krupa
+ *
+ *  The most important function defined in this file is MergeWithOutBuffer().
  */
 
 #ifndef SRC_MERGE_WITHOUT_BUFFER_H_
