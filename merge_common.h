@@ -3,6 +3,8 @@
  *
  *  Created on: Jun 29, 2017
  *      Author: Matthew Gregory Krupa
+ *
+ *  This file contains helper functions for the TrimEnds() functions.
  */
 
 #ifndef SRC_MERGE_COMMON_H_
@@ -26,7 +28,8 @@
  *       start_left and start_right)
  */
 template<class RAI>
-inline int DisplacementFromMiddleIiteratorToPotentialMediansContiguous_KnownToExist(const RAI end_left, int length) {
+inline int DisplacementFromMiddleIiteratorToPotentialMediansContiguous_KnownToExist(
+                                              const RAI end_left, int length) {
   auto start_right   = end_left + 1;
   (void)length--;  //We will now use length_left as if it were d_upper.
   int d_lower = 0; //So that end_left - d_lower = end_left
@@ -48,7 +51,8 @@ inline int DisplacementFromMiddleIiteratorToPotentialMediansContiguous_KnownToEx
  * SE = inputs are start_it and end_it
  */
 template<class ForwardIterator, class T>
-ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(ForwardIterator start_it, ForwardIterator end_it, const T value) {
+ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(
+             ForwardIterator start_it, ForwardIterator end_it, const T value) {
   while (true) {
     //The below lines are optional. They are performed at most
     // std::distance(start_it, d) + 1 times.
@@ -67,7 +71,8 @@ ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(ForwardIterato
 
     auto d = start_it + std::distance(start_it, end_it) / 2;
     if (*d <= value)
-      start_it = d + 1;//Note that start_it will be <= end_it since the desired it is known to exist.
+      start_it = d + 1; //Note that start_it will be <= end_it since the
+                        //desired iterator is known to exist.
     else
       end_it   = d;
   }
@@ -87,7 +92,8 @@ ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(ForwardIterato
  *  dist(d, end_it) + 1, ceil(log_2(dist(start_it, end_it + 1)))} comparisons.
  */
 template<class RAI, class T>
-inline RAI LargestIteratorWithValueLessThan_KnownToExist(RAI start_it, RAI end_it, const T value) {
+inline RAI LargestIteratorWithValueLessThan_KnownToExist(RAI start_it,
+                                                   RAI end_it, const T value) {
   while (true) {//Use: while(start_it < end_it){ if the d is not known to exist.
     //The below three lines are optional. They are performed at most
     // std::distance(d, end_it) + 1 times.
@@ -203,7 +209,8 @@ inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
 template<class T>
 void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_right,
                        T * start_left_out, T * end_right_out) {
-  if (start_left <= end_left && start_right <= end_right && *end_left > *start_right) {
+  if (start_left <= end_left && start_right <= end_right
+      && *end_left > *start_right) {
     if (*start_left >= *end_right) {
 //TO DO: ????CHECK THAT THE BELOW FUNCTION WORKS AS INTENDED????
 
@@ -211,7 +218,8 @@ void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_right,
       // std::rotate(vec.begin() + start_left, vec.begin() + start_right,
       //             vec.begin() + (end_right + 1));
       // except that it works for ranges iterated by distinct objects.
-      ShiftRightSideToTheRightByItsLength(start_left, end_left, start_right, end_right);
+      ShiftRightSideToTheRightByItsLength(start_left, end_left, start_right,
+                                          end_right);
     } else if (end_left == start_left) {
       RotateLeftByExactlyOneElement(start_right, end_right, end_left);
     } else {// if (start_right == end_right) {
