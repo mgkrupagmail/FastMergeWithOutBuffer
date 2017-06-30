@@ -94,7 +94,8 @@ void TrimEnds3(T &start_left_out,  T &end_left_out,
     // 2) *end_left > *end_right > *start_left > *start_right.
 
     //NOTE/REMINDER: Up to 10 - 20% of elements are sometimes emplaced by the
-    // code in between this comment and the just_after_nested_loops label below.
+    // code in between this comment and definitions of length_left and
+    // length_right below.
     //Also the first two main loops (i.e. the loops BEFORE
     // while(*(end_right - 1) >= *(end_left - 2)) {...}) combined do about
     // 2/3 of this total work.
