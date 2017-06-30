@@ -15,7 +15,9 @@
 #include <vector>
 
 #include "random_helpers.h"
-#include "merge.h"
+#include "merge_without_buffer.h"
+#include "merge_without_buffer_trim2.h"
+#include "merge_without_buffer_trim1.h"
 
 template<class ForwardIterator>
 bool IsNonDecreasing(ForwardIterator start_it, ForwardIterator one_past_last) {
