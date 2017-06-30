@@ -2,7 +2,7 @@
  * merge_without_buffer.h
  *
  *  Created on: Jun 29, 2017
- *      Author: diagoras
+ *      Author: Matthew Gregory Krupa
  */
 
 #ifndef SRC_MERGE_WITHOUT_BUFFER_H_
