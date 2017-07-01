@@ -238,16 +238,4 @@ inline void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_ri
   return ;
 }
 
-/* This is a helper function that merges two ranges when the merge is trivial.
- */
-template<class T>
-inline void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_right,
-                       T * start_left_out, T * end_right_out) {
-
-  MergeTrivialCases(start_left, end_left, start_right, end_right);
-  *start_left_out = ++end_left;
-  *end_right_out  = start_right;
-  return ;
-}
-
 #endif /* SRC_MERGE_COMMON_H_ */
