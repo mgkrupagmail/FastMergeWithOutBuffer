@@ -54,7 +54,7 @@
  *   start_right < end_right).
  */
 template<class T>
-void TrimEnds3(T &start_left_out,  T &end_left_out,
+void TrimEnds(T &start_left_out,  T &end_left_out,
                T &start_right_out, T &end_right_out) {
   auto start_left  = start_left_out,  end_left  = end_left_out;
   auto start_right = start_right_out, end_right = end_right_out;
@@ -239,7 +239,7 @@ template<class RAI>
 void MergeWithOutBuffer(RAI start_left,  RAI end_left,
                         RAI start_right, RAI end_right) {
   int length_left, length_right, length_smaller, d;
-  TrimEnds3(start_left, end_left, start_right, end_right);
+  TrimEnds(start_left, end_left, start_right, end_right);
   length_left  = std::distance(start_left, end_left + 1);
   length_right = std::distance(start_right, end_right + 1);
   length_smaller = length_left < length_right ? length_left : length_right;
