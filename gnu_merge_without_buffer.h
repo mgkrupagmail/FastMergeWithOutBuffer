@@ -58,7 +58,7 @@ namespace gnu {
 /* The following gnu__merge_without_buffer() function is taken directly from
  *  the GNU public library. Its definition (as of 29 June 2017) can be found here:
  *  https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01499_source.html#l02491
- * Due to the definitions of stl_algo.h header, it is unfortunately not
+ * Due to the definition of the stl_algo.h header, it is unfortunately not
  *  possible to call directly call the function __merge_without_buffer(),
  *  which necessitated the creation of the gnu__merge_without_buffer() function
  *  below.
