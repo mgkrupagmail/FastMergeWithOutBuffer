@@ -10,8 +10,23 @@
 #ifndef SRC_MERGE_COMMON_H_
 #define SRC_MERGE_COMMON_H_
 
+/* Finds the SMALLEST integer  0 <= d < length IF it exists such that
+ *  (*) *(end_left - d) <= *(start_right + d), and
+ *  otherwise, if such a d does NOT exist then it returns length - 1.
+ * Assumes that [start_left : start_index + length - 1] is non-decreasing,
+ *  that all these elements exist, and that BOTH subvectors have size >= length
+ *  and that length > 0, where start_left = end_left - (length - 1).
+ * WARNING: POTENTIAL FALSE POSITIVE: There are two ways that this function may
+ *  return length - 1:
+ *  1) Such a d does NOT exist. i.e. *start_index > *end_right.
+ *  2) Such a d exists and happens to equal length - 1. i.e.
+ *     *start_left <= *end_right and *(start_left + 1) > *(end_right - 1]
+ * NOTES:
+ *  (1) If *end_left > *(end_left + 1) and such a d exists then d is
+ *       necessarily > 0.
+ */
 template<class RAI>
-int DisplacementFromMiddleIteratorToPotentialMedians_E1L1(const RAI end_left,
+int DisplacementFromMiddleIteratorToPotentialMedians(const RAI end_left,
                                             const RAI start_right, int length) {
   (void)length--;  //We will now use length_left as if it were d_upper.
   int d_lower = 0; //So that end_left - d_lower = end_left
