@@ -11,7 +11,8 @@
 #define SRC_MERGE_COMMON_H_
 
 template<class RAI>
-int DisplacementFromMiddleIteratorToPotentialMedians_E1L1(const RAI end_left, const RAI start_right, int length) {
+int DisplacementFromMiddleIteratorToPotentialMedians_E1L1(const RAI end_left,
+                                            const RAI start_right, int length) {
   (void)length--;  //We will now use length_left as if it were d_upper.
   int d_lower = 0; //So that end_left - d_lower = end_left
   do {
@@ -25,12 +26,12 @@ int DisplacementFromMiddleIteratorToPotentialMedians_E1L1(const RAI end_left, co
   return d_lower;
 }
 
-/* Does the equivalent of: while(start_it < end_it && vec[start_it] <= vec[end_it]) ++start_it;
- *  So if no such
- * Does the same thing as LargestIndexWithValueLessThan(), except that its inputs are different
- *  and also, in addition to performing a binary search, it simultaneously performs a linear search starting
- *  from the end_it
- * SE = inputs are start_it and end_it
+/* Does the equivalent of:
+ *     while(start_it < end_it && *start_it <= *end_it) start_it++;
+ *  except that it finds the resulting start_it via a binary search.
+ * In addition to performing a binary search, it simultaneously performs a
+ *  linear search starting from the end_it.
+ * SE = inputs are start_it and end_it.
  */
 template<class ForwardIterator, class T>
 ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(
@@ -38,17 +39,15 @@ ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(
   while (true) {
     //The below lines are optional. They are performed at most
     // std::distance(start_it, d) + 1 times.
-    if (*start_it > value) {
+    if (*start_it > value)
       return start_it;
-    }
     (void)start_it++;
 
     //The below lines are optional. They are performed at most
     // std::distance(d, end_it) + 1 times.
     auto cur_length_minus_one = std::distance(start_it, end_it);
-    if (*(start_it + cur_length_minus_one - 1) <= value) {
+    if (*(start_it + cur_length_minus_one - 1) <= value)
       return end_it;
-    }
     (void)end_it--;
 
     auto d = start_it + std::distance(start_it, end_it) / 2;
