@@ -251,7 +251,7 @@ void MergeWithOutBuffer(RAI start_left,  RAI end_left,
   }
   //At this point we're guaranteed to have start_left < start_right and
   // *start_left > *start_right.
-  d = DisplacementFromMiddleIteratorToPotentialMedians_E1L1(end_left,
+  d = DisplacementFromMiddleIteratorToPotentialMedians_KnownToExist(end_left,
                                                    start_right, length_smaller);
   auto start_2nd_quarter = end_left - (d - 1);
   std::swap_ranges(start_2nd_quarter, end_left + 1, start_right);
