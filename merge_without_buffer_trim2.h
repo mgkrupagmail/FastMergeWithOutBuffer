@@ -49,9 +49,9 @@
  *  OTHERWISE both subranges have length >= 2 (i.e. start_left < end_left &&
  *   start_right < end_right).
  */
-template<class T>
-void TrimEnds2(T &start_left_out,  T &end_left_out,
-               T &start_right_out, T &end_right_out) {
+template<class RAI, class RAI2>
+void TrimEnds2(RAI &start_left_out,   RAI &end_left_out,
+               RAI2 &start_right_out, RAI2 &end_right_out) {
   auto start_left  = start_left_out,  end_left  = end_left_out;
   auto start_right = start_right_out, end_right = end_right_out;
   bool is_trivial = false;
@@ -155,9 +155,9 @@ void TrimEnds2(T &start_left_out,  T &end_left_out,
 
 
 //Assumes that start_left <= start_right
-template<class RAI>
-void MergeWithOutBufferTrim2(RAI start_left,  RAI end_left,
-                             RAI start_right, RAI end_right) {
+template<class RAI, class RAI2>
+void MergeWithOutBufferTrim2(RAI start_left,   RAI end_left,
+                             RAI2 start_right, RAI2 end_right) {
   int length_left, length_right, length_smaller, d;
   TrimEnds2(start_left, end_left, start_right, end_right);
   length_left  = std::distance(start_left, end_left + 1);
