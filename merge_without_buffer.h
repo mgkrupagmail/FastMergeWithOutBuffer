@@ -54,8 +54,8 @@
  *   start_right < end_right).
  */
 template<class RAI, class RAI2>
-void TrimEnds(RAI &start_left_out,  RAI &end_left_out,
-               RAI2 &start_right_out, RAI2 &end_right_out) {
+void TrimEnds(RAI &start_left_out,   RAI &end_left_out,
+              RAI2 &start_right_out, RAI2 &end_right_out) {
   auto start_left  = start_left_out,  end_left  = end_left_out;
   auto start_right = start_right_out, end_right = end_right_out;
   bool is_trivial = false;
@@ -236,7 +236,7 @@ void TrimEnds(RAI &start_left_out,  RAI &end_left_out,
 
 //Assumes that start_left <= start_right
 template<class RAI, class RAI2>
-void MergeWithOutBuffer(RAI start_left,  RAI end_left,
+void MergeWithOutBuffer(RAI start_left,   RAI end_left,
                         RAI2 start_right, RAI2 end_right) {
   int length_left, length_right, length_smaller, d;
   TrimEnds(start_left, end_left, start_right, end_right);
