@@ -121,17 +121,10 @@ void MergeWithOutBufferTrim1(RAI start_left,  RAI end_left,
   length_right = std::distance(start_right, end_right + 1);
   length_smaller = length_left < length_right ? length_left : length_right;
   //Check for triviality.
-  if (start_left > end_left || start_right > end_right
-      || *end_left <= *start_right)
-    return ;
   if (length_smaller <= 1) {
-    if (length_smaller <= 0)
-      return ;
-    else if (length_left == 1 && length_right == 1) {
-      if (*start_left > *start_right)
-        std::iter_swap(start_left, start_right);
-      return ;
-    }
+    MergeTrivialCases(start_left, end_left, start_right, end_right, length_left,
+                      length_right);
+    return ;
   }
   d = DisplacementFromMiddleIiteratorToPotentialMediansContiguous_KnownToExist(
                                                       end_left, length_smaller);
