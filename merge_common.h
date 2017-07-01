@@ -204,28 +204,47 @@ inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
   return ;
 }
 
-/* This is a helper function that merges two ranges when the merge is trivial.
+/* This is a helper function that merges two ranges when the merge is trivial,
+ *  by which it is meant that length_left <= 1 or length_right <= 1.
  */
 template<class T>
 void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_right,
-                       T * start_left_out, T * end_right_out) {
-  if (start_left <= end_left && start_right <= end_right
-      && *end_left > *start_right) {
-    if (*start_left >= *end_right) {
-//TO DO: ????CHECK THAT THE BELOW FUNCTION WORKS AS INTENDED????
-
-      ///Note that this function has the same effect as
-      // std::rotate(vec.begin() + start_left, vec.begin() + start_right,
-      //             vec.begin() + (end_right + 1));
-      // except that it works for ranges iterated by distinct objects.
-      ShiftRightSideToTheRightByItsLength(start_left, end_left, start_right,
-                                          end_right);
-    } else if (end_left == start_left) {
-      RotateLeftByExactlyOneElement(start_right, end_right, end_left);
-    } else {// if (start_right == end_right) {
-      RotateRightByExactlyOneElement(start_left, end_left, start_right);
-    }
+                       long length_left, long length_right) {
+  if (length_left <= 0 || length_right <= 0 || *end_left <= *start_right)
+    return ;
+  else if (*start_left >= *end_right) {
+    ///Note that this function has the same effect as
+    // std::rotate(vec.begin() + start_left, vec.begin() + start_right,
+    //             vec.begin() + (end_right + 1));
+    // except that it works for ranges iterated by distinct objects.
+    ShiftRightSideToTheRightByItsLength(start_left, end_left, start_right,
+                                        end_right);
+  } else if (end_left == start_left) {
+    RotateLeftByExactlyOneElement(start_right, end_right, end_left);
+  } else {// if (start_right == end_right) {
+    RotateRightByExactlyOneElement(start_left, end_left, start_right);
   }
+  return ;
+}
+
+/* Overload of MergeTrivialCases().
+ */
+template<class T>
+inline void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_right) {
+  auto length_left  = std::distance(start_left,  end_left + 1);
+  auto length_right = std::distance(start_right, end_right + 1);
+  MergeTrivialCases(start_left, end_left, start_right, end_right, length_left,
+                    length_right);
+  return ;
+}
+
+/* This is a helper function that merges two ranges when the merge is trivial.
+ */
+template<class T>
+inline void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_right,
+                       T * start_left_out, T * end_right_out) {
+
+  MergeTrivialCases(start_left, end_left, start_right, end_right);
   *start_left_out = ++end_left;
   *end_right_out  = start_right;
   return ;
