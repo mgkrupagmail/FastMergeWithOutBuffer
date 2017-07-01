@@ -125,8 +125,8 @@ void MergeWithOutBufferTrim1(RAI start_left,  RAI end_left,
                       length_right);
     return ;
   }
-  d = DisplacementFromMiddleIiteratorToPotentialMediansContiguous_KnownToExist(
-                                                      end_left, length_smaller);
+  d = DisplacementFromMiddleIteratorToPotentialMedians_E1L1(end_left,
+                                                   start_right, length_smaller);
   auto start_2nd_quarter = end_left - (d - 1);
   std::swap_ranges(start_2nd_quarter, end_left + 1, start_right);
   auto start_4th_quarter = start_right + d;
