@@ -220,8 +220,7 @@ void TrimEnds3(T &start_left_out,  T &end_left_out,
   }
 
   if (is_trivial) {
-    MergeTrivialCases(start_left, end_left, start_right, end_right,
-                      &start_left_out, &end_right_out);
+    MergeTrivialCases(start_left, end_left, start_right, end_right);
     start_left_out   = end_left + 1;
     end_left_out     = end_left;
     start_right_out  = end_right + 1;
