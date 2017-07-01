@@ -5,11 +5,11 @@
  *      Author: Matthew Gregory Krupa
  *
  *  This header file defines the TestCorrectnessOfMerge() function, which
- *   generates random vectors and tests that some given merge funcion
+ *   generates random vectors and tests that some given merge function
  *   correctly merges two ordered sub-vectors.
  *  It tests MergeWithOutBuffer() by default.
  *  To test some other merge function replace MergeWithOutBuffer with your
- *  desired function in the body of MergeTwoSortedSubvectorsTestCorrectness().
+ *   desired function in the body of MergeTwoSortedSubvectorsTestCorrectness().
  */
 
 #ifndef SRC_MERGE_TEST_CORRECTNESS_H_
