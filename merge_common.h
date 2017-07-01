@@ -26,8 +26,8 @@
  *       necessarily > 0.
  */
 template<class RAI>
-int DisplacementFromMiddleIteratorToPotentialMedians(const RAI end_left,
-                                            const RAI start_right, int length) {
+int DisplacementFromMiddleIteratorToPotentialMedians_KnownToExist(
+                         const RAI end_left,const RAI start_right, int length) {
   (void)length--;  //We will now use length_left as if it were d_upper.
   int d_lower = 0; //So that end_left - d_lower = end_left
   do {
