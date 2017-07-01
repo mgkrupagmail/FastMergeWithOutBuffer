@@ -59,7 +59,7 @@ namespace gnu {
  *  the GNU public library. Its definition (as of 29 June 2017) can be found here:
  *  https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01499_source.html#l02491
  * Due to the definition of the stl_algo.h header, it is unfortunately not
- *  possible to call directly call the function __merge_without_buffer(),
+ *  possible to directly call the function __merge_without_buffer(),
  *  which necessitated the creation of the gnu__merge_without_buffer() function
  *  below.
  * Due to linking issues, the following changes have been made:
@@ -73,7 +73,9 @@ namespace gnu {
  * (6) __gnu_cxx::__ops::__val_comp_iter(__comp) was changed to __comp
  * These are the only modification that were made to the original function
  *  whose original definition can be found in the link to the public GNU
- *  library provided above.
+ *  library provided above. Since we will be sorting elements of type int,
+ *  there should not be, at least in theory, any difference in performance  
+ *  between gnu__merge_without_buffer() and __merge_without_buffer().
  */
 template<typename _BidirectionalIterator, typename _Distance,
          typename _Compare>
