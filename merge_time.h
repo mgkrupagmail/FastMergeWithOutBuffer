@@ -23,7 +23,10 @@
 #include <vector>
 
 #include "gnu_merge_without_buffer.h"
-#include "merge.h"
+#include "merge_without_buffer.h"
+#include "merge_without_buffer_trim3.h"
+#include "merge_without_buffer_trim2.h"
+#include "merge_without_buffer_trim1.h"
 #include "misc_helpers.h"
 
 template<class T>
@@ -110,18 +113,18 @@ std::chrono::nanoseconds TimeStdMergeWithOutBufferOnGivenVec(
 }
 
 template<class T>
-std::chrono::nanoseconds TimeMergeWithOutBuffer1OnGivenVec(std::vector<T> &vec,
-                  const std::vector<T> &vec_original,  std::size_t start_second,
-                  std::size_t num_repititions = 1) {
+std::chrono::nanoseconds TimeMergeWithOutBuffer3OnGivenVec(std::vector<T> &vec,
+                   const std::vector<T> &vec_original, std::size_t start_second,
+                   std::size_t num_repititions = 1) {
   std::chrono::nanoseconds total{0};
   {
-  MergeWithOutBufferTrim1(vec.begin(), vec.begin() + (start_second - 1),
-                                         vec.begin() + start_second, vec.end());
+  MergeWithOutBufferTrim3(vec.begin(), vec.begin() + (start_second - 1),
+                          vec.begin() + start_second, vec.end());
   vec = vec_original;
   }
   for (std::size_t i = 0; i < num_repititions; i++) {
     auto start_time = std::chrono::high_resolution_clock::now();
-    MergeWithOutBufferTrim1(vec.begin(), vec.begin() + (start_second - 1),
+    MergeWithOutBufferTrim3(vec.begin(), vec.begin() + (start_second - 1),
                             vec.begin() + start_second, vec.end());
     total += std::chrono::high_resolution_clock::now() - start_time;
     vec = vec_original;
@@ -149,10 +152,31 @@ std::chrono::nanoseconds TimeMergeWithOutBuffer2OnGivenVec(std::vector<T> &vec,
   return static_cast<std::chrono::nanoseconds>(total);
 }
 
+template<class T>
+std::chrono::nanoseconds TimeMergeWithOutBuffer1OnGivenVec(std::vector<T> &vec,
+                  const std::vector<T> &vec_original,  std::size_t start_second,
+                  std::size_t num_repititions = 1) {
+  std::chrono::nanoseconds total{0};
+  {
+  MergeWithOutBufferTrim1(vec.begin(), vec.begin() + (start_second - 1),
+                                         vec.begin() + start_second, vec.end());
+  vec = vec_original;
+  }
+  for (std::size_t i = 0; i < num_repititions; i++) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+    MergeWithOutBufferTrim1(vec.begin(), vec.begin() + (start_second - 1),
+                            vec.begin() + start_second, vec.end());
+    total += std::chrono::high_resolution_clock::now() - start_time;
+    vec = vec_original;
+  }
+  return static_cast<std::chrono::nanoseconds>(total);
+}
+
 struct TotalTimes {
   std::chrono::nanoseconds std_merge{0};
   std::chrono::nanoseconds std_inplace_merge{0};
   std::chrono::nanoseconds merge_without_buffer{0};
+  std::chrono::nanoseconds merge_without_buffer3{0};
   std::chrono::nanoseconds merge_without_buffer2{0};
   std::chrono::nanoseconds merge_without_buffer1{0};
   std::chrono::nanoseconds gnu_merge_without_buffer{0};
@@ -160,12 +184,13 @@ struct TotalTimes {
   std::size_t max_nano_str_width = 1;
 
   TotalTimes &operator+=(const TotalTimes &rhs) {
-    std_inplace_merge         += rhs.std_inplace_merge;
     std_merge                 += rhs.std_merge;
+    std_inplace_merge         += rhs.std_inplace_merge;
     merge_without_buffer      += rhs.merge_without_buffer;
-    gnu_merge_without_buffer  += rhs.gnu_merge_without_buffer;
-    merge_without_buffer1     += rhs.merge_without_buffer1;
+    merge_without_buffer3     += rhs.merge_without_buffer3;
     merge_without_buffer2     += rhs.merge_without_buffer2;
+    merge_without_buffer1     += rhs.merge_without_buffer1;
+    gnu_merge_without_buffer  += rhs.gnu_merge_without_buffer;
     return *this;
   }
   template<class T> static std::size_t GetStringWidth(T value) {
@@ -199,6 +224,8 @@ struct TotalTimes {
     strm << "Merge algorithms that do not use a buffer:\n";
     strm << "merge_without_buffer ave     = "
          << GetTimeStr(merge_without_buffer, divisor) << '\n';
+    strm << "merge_without_buffer3 ave    = "
+         << GetTimeStr(merge_without_buffer3, divisor) << '\n';
     strm << "merge_without_buffer2 ave    = "
          << GetTimeStr(merge_without_buffer2, divisor) << '\n';
     strm << "merge_without_buffer1 ave    = "
@@ -232,6 +259,12 @@ template<class T> inline TotalTimes TimeMergesOnGivenVec(std::vector<T> &vec,
                            vec_original, start_second, num_repititions_per_vec);
   } catch (...) {
     std::cout << "TimeMergeWithOutBufferOnGivenVec() Failed." << std::endl;
+  }
+  try {
+    total_times.merge_without_buffer3 += TimeMergeWithOutBuffer3OnGivenVec(vec,
+                           vec_original, start_second, num_repititions_per_vec);
+  } catch (...) {
+    std::cout << "TimeStdMergeWithOutBuffer2OnGivenVec() Failed." << std::endl;
   }
   try {
     total_times.merge_without_buffer2 += TimeMergeWithOutBuffer2OnGivenVec(vec,
