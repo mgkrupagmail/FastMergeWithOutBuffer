@@ -54,7 +54,7 @@
  *   start_right < end_right).
  */
 template<class RAI, class RAI2>
-void TrimEnds(RAI &start_left_out,   RAI &end_left_out,
+void TrimEnds4(RAI &start_left_out,   RAI &end_left_out,
               RAI2 &start_right_out, RAI2 &end_right_out) {
   auto start_left  = start_left_out,  end_left  = end_left_out;
   auto start_right = start_right_out, end_right = end_right_out;
@@ -199,24 +199,76 @@ void TrimEnds(RAI &start_left_out,   RAI &end_left_out,
       }
     }
 
-    if (*(end_right - 2) >= *(end_left - 3)) {
-      std::iter_swap(end_left - 2, end_right - 2);
-      std::iter_swap(end_left - 1, end_right - 1);
-      std::iter_swap(end_left, end_right);
-      end_right = end_right - 3;
-      if (start_right >= end_right) {
+    if (*(end_left - 3) <= *end_right) {
+      if (*(end_left - 3) <= *(end_right - 2)) {
+        std::iter_swap(end_left - 2, end_right - 2);
+        std::iter_swap(end_left - 1, end_right - 1);
+        std::iter_swap(end_left, end_right);
+        end_right = end_right - 3;
+      }
+      //At this point, *(end_left - 3) > *(end_right - 2).
+      else if (*(end_left - 3) <= *(end_right - 1)) {
+        //Rotate end_left - 2, end_left - 1, end_left, end_right - 1, end_right
+        // to the right by 2.
+        auto temp        = *end_left;
+        *end_left        = *(end_left - 2);
+        *(end_left - 2)  = *(end_right - 1);
+        *(end_right - 1) = *(end_left - 1);
+        *(end_left - 1)  = *end_right;
+        *end_right       = temp;
+        end_right        = end_right - 2;
+      }
+      //At this point, *(end_left - 3) > *(end_right - 1) and
+      // *(end_left - 3) <= *end_right.
+      else {
+        //Rotate end_left - 2, end_left - 1, end_left, end_right
+        // to the right by 1.
+        auto temp       = *end_right;
+        *end_right      = *end_left;
+        *end_left       = *(end_left - 1);
+        *(end_left - 1) = *(end_left - 2);
+        *(end_left - 2) = temp;
+        end_right       = end_right - 1;
+      }
+      if (start_right >= end_right || *start_left >= *end_right) {
         is_trivial = true;
         break;
       }
       continue ;
     }
 
-    if (*(start_left + 2) <= *(start_right + 3)) {
-      std::iter_swap(start_left, start_right);
-      std::iter_swap(start_left + 1, start_right + 1);
-      std::iter_swap(start_left + 2, start_right + 2);
-      start_left = start_left + 3;
-      if (start_left >= end_left) {
+    if (*(start_right + 3) >= *start_left) {
+      if (*(start_right + 3) >= *(start_left + 2)) {
+        std::iter_swap(start_left, start_right);
+        std::iter_swap(start_left + 1, start_right + 1);
+        std::iter_swap(start_left + 2, start_right + 2);
+        start_left = start_left + 3;
+      }
+      //At this point *(start_right + 3) < *(start_left + 2).
+      else if (*(start_right + 3) >= *(start_left + 1)) {
+        //Rotate start_left, start_left + 1, start_right, start_right + 1,
+        // start_right + 2 to the left by 2.
+        auto temp          = *start_right;
+        *start_right       = *(start_right + 2);
+        *(start_right + 2) = *(start_left + 1);
+        *(start_left + 1)  = *(start_right + 1);
+        *(start_right + 1) = *start_left;
+        *start_left        = temp;
+        start_left         = start_left + 2;
+      }
+      //At this point *(start_right + 3) < *(start_left + 1)) and
+      // *(start_right + 3) >= *start_left.
+      else {
+        //Rotate start_left, start_right, start_right + 1, start_right + 2
+        // to the left by 1.
+        auto temp          = *start_left;
+        *start_left        = *start_right;
+        *start_right       = *(start_right + 1);
+        *(start_right + 1) = *(start_right + 2);
+        *(start_right + 2) = temp;
+        start_left       = start_left + 1;
+      }
+      if (start_left >= end_left || *start_left >= *end_right) {
         is_trivial = true;
         break;
       }
@@ -264,7 +316,7 @@ template<class RAI, class RAI2>
 void MergeWithOutBuffer(RAI start_left,   RAI end_left,
                         RAI2 start_right, RAI2 end_right) {
   int length_left, length_right, length_smaller, d;
-  TrimEnds(start_left, end_left, start_right, end_right);
+  TrimEnds4(start_left, end_left, start_right, end_right);
   length_left  = std::distance(start_left, end_left + 1);
   length_right = std::distance(start_right, end_right + 1);
   length_smaller = length_left < length_right ? length_left : length_right;
