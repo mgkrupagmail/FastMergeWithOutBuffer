@@ -198,6 +198,31 @@ void TrimEnds(RAI &start_left_out,   RAI &end_left_out,
         break;
       }
     }
+
+    if (*(end_right - 2) >= *(end_left - 3)) {
+      std::iter_swap(end_left - 2, end_right - 2);
+      std::iter_swap(end_left - 1, end_right - 1);
+      std::iter_swap(end_left, end_right);
+      end_right = end_right - 3;
+      if (start_right >= end_right) {
+        is_trivial = true;
+        break;
+      }
+      continue ;
+    }
+
+    if (*(start_left + 2) <= *(start_right + 3)) {
+      std::iter_swap(start_left, start_right);
+      std::iter_swap(start_left + 1, start_right + 1);
+      std::iter_swap(start_left + 2, start_right + 2);
+      start_left = start_left + 3;
+      if (start_left >= end_left) {
+        is_trivial = true;
+        break;
+      }
+      continue ;
+    }
+
     auto length_left  = std::distance(start_left, end_left + 1);
     auto length_right = std::distance(start_right, end_right + 1);
     if (length_left <= length_right && *start_left >=
