@@ -5,7 +5,7 @@
  *      Author: Matthew Gregory Krupa
  *
  *  This header file defines the TestCorrectnessOfMerge() function, which
- *   generates random vectors and tests that some given merge function
+ *   generates random vectors and tests that some given merge funcion
  *   correctly merges two ordered sub-vectors.
  *  It tests MergeWithOutBuffer() by default.
  *  To test some other merge function replace MergeWithOutBuffer with your
@@ -25,8 +25,87 @@
 
 #include "misc_helpers.h"
 #include "merge_without_buffer.h"
+#include "merge_without_buffer_trim3.h"
 #include "merge_without_buffer_trim2.h"
 #include "merge_without_buffer_trim1.h"
+
+/* Helper function for MergeTwoSortedSubvectorsTestCorrectness().
+ */
+void TestCorrectnessVerifyInputs(int vec_size, int start_left, int end_left,
+                                 int start_right, int end_right) {
+  assert(start_left >= 0);
+  assert(start_right >= 0);
+  assert(start_left  <= end_left);
+  assert(start_right <= vec_size);
+  assert(start_right <= end_right);
+  assert(end_right   < vec_size);
+  assert(end_left    < vec_size);
+
+  //Check that [start_right, end_right] and [start_left,  end_left] are disjoint.
+  //Check that start_left is not in [start_right, end_right].
+  assert(!(start_left  <= end_right && start_left  >= start_right));
+  //Check that end_left   is not in [start_right, end_right].
+  assert(!(end_left    <= end_right && end_left    >= start_right));
+  //Check that start_right is not in [start_left,  end_left].
+  assert(!(start_right <= end_left  && start_right >= start_left));
+  //Check that end_right   is not in [start_left,  end_left].
+  assert(!(end_right   <= end_left  && end_right   >= start_left));
+  return ;
+}
+
+/* Helper function for MergeTwoSortedSubvectorsTestCorrectness().
+ */
+template<class T>
+void PrintVectorInfo(const std::vector<T> &vec, int start_left,
+            int end_left, int start_right, int end_right) {
+    std::cout << "start_left = "   << start_left          << "\tend_left =\t"
+              << end_left          << "\tstart_right =\t" << start_right
+              << "\tend_right =\t" << end_right           << std::endl;
+    auto length_left  = end_left  + 1 - start_left;
+    auto length_right = end_right + 1 - start_right;
+    PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left,
+                                   false);
+    PrintNondecreasingSubsequences(vec.begin() + start_right, length_right,
+                                   true);
+    return ;
+}
+
+/* Helper function for MergeTwoSortedSubvectorsTestCorrectness().
+ * Checks if vec is non-decreasing, in which case it returns true.
+ * Otherwise, it prints an error message and returns false.
+ */
+template<class T>
+bool TestCorrectnessVerifyNondecreasing(std::vector<T> &vec,
+            std::vector<T> &vec_original,
+            int start_left, int end_left, int start_right, int end_right,
+            int original_start_left, int original_end_left,
+            int original_start_right, int original_end_right) {
+  bool is_left_non_decreasing  = IsNonDecreasing(vec.begin()
+                       + original_start_left,  vec.begin() + original_end_left);
+  bool is_right_non_decreasing = IsNonDecreasing(vec.begin()
+                      + original_start_right, vec.begin() + original_end_right);
+  if (!(is_left_non_decreasing && is_right_non_decreasing && vec[end_left]
+                                                         <= vec[start_right])) {
+    auto original_length_left  = original_end_left  + 1 - original_start_left;
+    auto original_length_right = original_end_right + 1 - original_start_right;
+
+    PrintLine("-");
+    std::cout << "Something went wrong when merging these vectors:" << '\n';
+    PrintNondecreasingSubsequences(vec_original.begin() + original_start_left,
+                                   original_length_left, false);
+    PrintNondecreasingSubsequences(vec_original.begin() + original_start_right,
+                                   original_length_right, true);
+    std::cout << "These were the resulting vectors:" << std::endl;
+    PrintNondecreasingSubsequences(vec.begin() + original_start_left,
+                                   original_length_left, false);
+    PrintNondecreasingSubsequences(vec.begin() + original_start_right,
+                                   original_length_right, true);
+    PrintVectorInfo(vec, start_left, end_left, start_right, end_right);
+    PrintLine("-");
+    return false;
+  }
+  return true;
+}
 
 /* Assumes that start_left <= start_right.
  * If the test fails then vec_that_it_failed_on will be set equal to the
@@ -60,39 +139,18 @@ bool MergeTwoSortedSubvectorsTestCorrectness(int vec_size,
             T lower_bound = std::numeric_limits<T>::min(),
             T upper_bound = std::numeric_limits<T>::max()) {
   if (vec_size <= 1) {
-    std::cout << __LINE__ << ", vec_size = " << vec_size << " <= 1."
-        << std::endl;
+    std::cout << "vec_size = " << vec_size << " <= 1." << std::endl;
     vec_that_it_failed_on = std::vector<T>(vec_size);
     return false;
   }
   if (end_right == -1)
     end_right = vec_size - 1;
-assert(start_left >= 0);
-assert(start_right >= 0);
-assert(start_left  <= end_left);
-assert(start_right <= vec_size);
-assert(start_right <= end_right);
-assert(end_right   < vec_size);
-assert(end_left    < vec_size);
-
-//Check that [start_right, end_right] and [start_left,  end_left] are disjoint.
-//Check that start_left is not in [start_right, end_right].
-assert(!(start_left  <= end_right && start_left  >= start_right));
-//Check that end_left   is not in [start_right, end_right].
-assert(!(end_left    <= end_right && end_left    >= start_right));
-//Check that start_right is not in [start_left,  end_left].
-assert(!(start_right <= end_left  && start_right >= start_left));
-//Check that end_right   is not in [start_left,  end_left].
-assert(!(end_right   <= end_left  && end_right   >= start_left));
+  TestCorrectnessVerifyInputs(vec_size, start_left, end_left, start_right,
+                              end_right);
 
   std::vector<T> vec_original(vec_size);
-
   FillWithRandomNumbers(vec_original.begin(), vec_original.end(),
                         lower_bound, upper_bound);
-
-  int length_left     = end_left  + 1 - start_left;
-  int length_right    = end_right + 1 - start_right;
-
   //Sort the left and right subvectors.
   std::sort(vec_original.begin() + start_left,
             vec_original.begin() + (end_left + 1));
@@ -102,76 +160,32 @@ assert(!(end_right   <= end_left  && end_right   >= start_left));
 
   if (verbose) {
     PrintLine("_");
-    std::cout << "start_left = "   << start_left          << "\tend_left =\t"
-              << end_left          << "\tstart_right =\t" << start_right
-              << "\tend_right =\t" << end_right           << std::endl;
-    PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left,
-                                   false);
-    PrintNondecreasingSubsequences(vec.begin() + start_right, length_right,
-                                   true);
+    PrintVectorInfo(vec, start_left, end_left, start_right, end_right);
   }
-
   const int original_start_left   = start_left;
   const int original_start_right  = start_right;
   const int original_end_left     = end_left;
   const int original_end_right    = end_right;
-  const int original_length_left  = length_left;
-  const int original_length_right = length_right;
 
   if (verbose) {
     PrintLine("_");
-    std::cout << "start_left = "   << start_left          << "\tend_left =\t"
-              << end_left          << "\tstart_right =\t" << start_right
-              << "\tend_right =\t" << end_right           << std::endl;
-    PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left,
-                                   false);
-    PrintNondecreasingSubsequences(vec.begin() + start_right, length_right,
-                                   true);
-    PrintLine("-");
-
+    PrintVectorInfo(vec, start_left, end_left, start_right, end_right);
   }
 
-  MergeWithOutBuffer(vec.begin() + start_left, vec.begin() + end_left,
+  MergeWithOutBuffer(vec.begin() + start_left,  vec.begin() + end_left,
                      vec.begin() + start_right, vec.begin() + end_right);
 
-  bool is_left_non_decreasing  = IsNonDecreasing(vec.begin()
-                       + original_start_left,  vec.begin() + original_end_left);
-  bool is_right_non_decreasing = IsNonDecreasing(vec.begin()
-                      + original_start_right, vec.begin() + original_end_right);
-  if (!(is_left_non_decreasing && is_right_non_decreasing && vec[end_left]
-                                                         <= vec[start_right])) {
-    PrintLine("-");
-    std::cout << "Something went wrong when merging these vectors:" << '\n';
-    PrintNondecreasingSubsequences(vec_original.begin() + original_start_left,
-                                   original_length_left, false);
-    PrintNondecreasingSubsequences(vec_original.begin() + original_start_right,
-                                   original_length_right, true);
-    std::cout << "These were the resulting vectors:" << std::endl;
-    PrintNondecreasingSubsequences(vec.begin() + original_start_left,
-                                   original_length_left, false);
-    PrintNondecreasingSubsequences(vec.begin() + original_start_right,
-                                   original_length_right, true);
-    std::cout << "start_left = "    << start_left         << "\tend_left =\t"
-              << end_left          << "\tstart_right =\t" << start_right
-              << "\tend_right =\t" << end_right           << std::endl;
-    PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left,
-                                   false);
-    PrintNondecreasingSubsequences(vec.begin() + start_right, length_right,
-                                   true);
-    PrintLine("-");
+  auto result = TestCorrectnessVerifyNondecreasing(vec, vec_original,
+            start_left, end_left, start_right, end_right, original_start_left,
+            original_end_left, original_start_right, original_end_right);
+  if (!result) {
     vec_that_it_failed_on = std::move(vec_original);
     return false;
   }
-  if (verbose) {
-    PrintLine("_");
-    std::cout << "start_left = "   << start_left          << "\tend_left =\t"
-              << end_left          << "\tstart_right =\t" << start_right
-              << "\tend_right =\t" << end_right           << std::endl;
-    PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left,
-                                   false);
-    PrintNondecreasingSubsequences(vec.begin() + start_right, length_right,
-                                   true);
 
+  if (verbose) {
+    PrintLine("-");
+    PrintVectorInfo(vec, start_left, end_left, start_right, end_right);
   }
   return true;
 }
@@ -244,8 +258,7 @@ bool TestCorrectnessOfMerge(int vec_size,
                     lower_bound, upper_bound);
 
     if (!result) {
-      std::cout << __LINE__ << ", Failed to merge the following vectors:"
-                << std::endl;
+      std::cout << "Failed to merge the following vectors:" << std::endl;
       auto start_right = 1;
       //Find start_right.
       while (start_right < vec_size && any_vec_object[start_right - 1] <=
