@@ -19,35 +19,12 @@
 
 #include "merge_common.h"
 
-/* Given two sorted ranges of values that are contiguous in memory as
- *  [start_left : end_right] this function will try function will try to
- *  increase start_left and decrease end_right as much as possible using only
- *  simple comparisons and switches near the ends of these two subintervals.
- * Assumes that both [start_left : end_left] and [start_right : end_right] are
- *  sorted in increasing order, and that
- *  start_left <= end_left == start_right - 1 < start_right <= end_right
- *  (IMPORTANT: Note the "end_left == start_right - 1")
- *
- * If *end_left <= *start_right then we make the intervals invalid. i.e.
- *  start_left_out = start_right; end_right_out = end_left;
- * After execution completes [initial_start_left : end_left] and
- *  [start_right : initial_end_right] will both still be increasing
- *  (where initial_start_left and initial_end_right refer to the values of
- *   start_left and end_right when this function is first entered).
- *
- * If after execution completes both subranges have size >= 2, then it is
- *  guaranteed that:
- *  1) *start_left > *(start_right + 1)
- *  2) *end_right  < *(end_left - 1)
- * If after execution completes both subranges have size >= 1, then it is
- *  guaranteed that:
- *  1) *start_left > *start_right
- *  2) *end_right  < *end_left
- *  3) *start_left < *end_right
- * If after execution completes, start_right > end_right or start_left >end_left
- *  then the two subranges have been completely merged;
- *  OTHERWISE both subranges have length >= 2 (i.e. start_left < end_left &&
- *   start_right < end_right).
+/* This function does the same thing as TrimEnds4() EXCEPT that only conditions
+ *  (1) and (2) are guaranteed. See TrimEnds4()'s documentation for details
+ *  since this is just TrimEnds4() with some code removed.
+ * Its purpose is to help experimentally verify that the additional code in
+ *  TrimEnds4() does not decrease the performance of the resulting merge
+ *  function.
  */
 template<class RAI, class RAI2>
 void TrimEnds2(RAI &start_left_out,   RAI &end_left_out,
