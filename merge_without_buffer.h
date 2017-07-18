@@ -7,8 +7,9 @@
  *  The most important function defined in this file is MergeWithOutBuffer().
  *  MergeWithOutBufferTrim1() contains the near minimum code needed to make the
  *   merge algorithm work.
- *  It is the fastest of MergeWithOutBuffer(), MergeWithOutBufferTrim 2(),
- *   and MergeWithOutBufferTrim1().
+ *  MergeWithOutBuffer() is the fastest of MergeWithOutBuffer(),
+ *   MergeWithOutBufferTrim 3(), MergeWithOutBufferTrim 2(), and
+ *   MergeWithOutBufferTrim1().
  */
 
 #ifndef SRC_MERGE_WITHOUT_BUFFER_H_
@@ -19,38 +20,42 @@
 #include "merge_common.h"
 
 /* Given two sorted ranges of values that are contiguous in memory as
- *  [start_left : end_right] this function will try function will try to
- *  increase start_left and decrease end_right as much as possible using only
- *  simple comparisons and switches near the ends of these two subintervals.
+ *  [start_left : end_right] this function will try to increase start_left
+ *  and decrease end_right as much as possible using only simple comparisons
+ *  and swaps near the ends of these two subintervals.
  * Assumes that both [start_left : end_left] and [start_right : end_right] are
- *  sorted in increasing order, and that
- *  start_left <= end_left == start_right - 1 < start_right <= end_right
- *  (IMPORTANT: Note the "end_left == start_right - 1")
+ *  sorted in non-decreasing order, and that
+ *  start_left <= end_left and start_right - 1 < start_right <= end_right.
  *
  * If *end_left <= *start_right then we make the intervals invalid. i.e.
- *  start_left_out = start_right; end_right_out = end_left;
- * After execution completes [initial_start_left : end_left] and
- *  [start_right : initial_end_right] will both still be increasing
- *  (where initial_start_left and initial_end_right refer to the values of
- *   start_left and end_right when this function is first entered).
+ *  set start_left_out = end_left_out + 1; start_right_out = end_right_out + 1;
+ * After execution completes [initial_start_left : initial_end_left] and
+ *  [initial_start_right : initial_end_right] will both be non-decreasing, where
+ *  initial_start_left, initial_end_right, etc. refer to the values of
+ *   start_left and end_right when this function is first entered.
  *
- * If after execution completes both subranges have size >= 3, (i.e.
- *  start_right - start_left >= 3 and end_left + 1 - start_right >= 3)
+ * (1) If after execution completes both subranges have length >= 1, then it is
+ *  guaranteed that:
+ *  a) *start_left > *start_right
+ *  b) *end_right  < *end_left
+ *  c) *start_left < *end_right
+ * (2) If after execution completes both subranges have length >= 2, then it is
+ *  guaranteed that:
+ *  a) *start_left > *(start_right + 1)
+ *  b) *end_right  < *(end_left - 1)
+ * (3) If after execution completes both subranges have length >= 3, then it is
+ *  guaranteed that:
+ *  a) *start_left > *(start_right + 2)
+ *  b) *end_right  < *(end_left - 2)
+ * (4) If after execution completes both subranges have length >= 4, (i.e.
+ *  end_left + 1 - start_left >= 4 and end_left + 1 - start_right >= 4)
  *  then it is guaranteed that:
- *  1) *start_left > *(start_right + 2)
- *  2) *end_right  < *(end_left - 2)
- * If after execution completes both subranges have size >= 2, then it is
- *  guaranteed that:
- *  1) *start_left > *(start_right + 1)
- *  2) *end_right  < *(end_left - 1)
- * If after execution completes both subranges have size >= 1, then it is
- *  guaranteed that:
- *  1) *start_left > *start_right
- *  2) *end_right  < *end_left
- *  3) *start_left < *end_right
+ *  a) *start_left > *(start_right + 3)
+ *  b) *end_right  < *(end_left - 3)
  * If after execution completes, start_right > end_right or start_left >end_left
- *  then the two subranges have been completely merged;
- *  OTHERWISE both subranges have length >= 2 (i.e. start_left < end_left &&
+ *  then this indicates that the two subranges have been completely merged into
+ *  a single non-decreasing range;
+ * OTHERWISE both subranges have length >= 2 (i.e. start_left < end_left &&
  *   start_right < end_right).
  */
 template<class RAI, class RAI2>
