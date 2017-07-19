@@ -6,8 +6,8 @@
  *
  *  A simplified version of MergeWithOutBuffer() that is faster but more
  *   complicated than MergeWithOutBufferTrim1().
- *  It is the slowest of MergeWithOutBuffer(), MergeWithOutBufferTrim 2(),
- *   and MergeWithOutBufferTrim3().
+ *  It is the slowest of MergeWithOutBuffer(), MergeWithOutBufferTrim4(),
+ *  MergeWithOutBufferTrim3(), and MergeWithOutBufferTrim2().
  */
 
 #ifndef SRC_MERGE_WITHOUT_BUFFER_TRIM2_H_
@@ -17,11 +17,11 @@
 
 #include "merge_common.h"
 
-/* This function does the same thing as TrimEnds4() EXCEPT that only conditions
- *  (1) and (2) are guaranteed. See TrimEnds4()'s documentation for details
- *  since this is just TrimEnds4() with some code removed.
+/* This function does the same thing as TrimEnds5() EXCEPT that only conditions
+ *  (1) and (2) are guaranteed. See TrimEnds5()'s documentation for details
+ *  since this is just TrimEnds5() with some code removed.
  * Its purpose is to help experimentally verify that the additional code in
- *  TrimEnds4() does not decrease the performance of the resulting merge
+ *  TrimEnds5() does not decrease the performance of the resulting merge
  *  function.
  */
 template<class RAI, class RAI2>
@@ -127,7 +127,6 @@ void TrimEnds2(RAI &start_left_out,   RAI &end_left_out,
   end_right_out    = end_right;
   return ;
 }
-
 
 //Assumes that start_left <= start_right
 template<class RAI, class RAI2>
