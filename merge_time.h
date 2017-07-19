@@ -9,7 +9,29 @@
  *   take to merges the two oranges.
  *  The various merge functions will all merge the same exact two ordered
  *   ranges.
+ *  The following lists the timed merge functions that do NOT use a buffer
+ *  with the best performing functions first:
+ *  1) MergeWithOutBuffer() (which could have been called
+ *                                                    MergeWithOutBufferTrim5())
+ *  2) MergeWithOutBufferTrim4()
+ *  3) MergeWithOutBufferTrim3()
+ *  4) MergeWithOutBufferTrim2()
+ *  5) MergeWithOutBufferTrim1()
+ *  6) gnu::gnu__merge_without_buffer()
+ *
+ * If one was to continue the pattern of the definitions of TrimEnds1(),
+ *  TrimEnds2(), ... so as to construct TrimEnds6(), TrimEnds7(), ... and
+ *  consequently also MergeWithOutBufferTrim6(), MergeWithOutBufferTrim7(), ...
+ *  then the boost in speed becomes either miniscule or negative beginning with
+ *  MergeWithOutBufferTrim6() and subsequent MergeWithOutBufferTrim#() tend to
+ *  become increasingly slower.
+ * This is why we end our pattern of definitions with the definitions of
+ *  TrimEnds5() and MergeWithOutBuffer() (which could have been labeled
+ *  MergeWithOutBufferTrim5() in order to fit the pattern).
  */
+
+//#include "merge_time_dev.h"
+//#define SRC_MERGE_TIME_H_
 
 #ifndef SRC_MERGE_TIME_H_
 #define SRC_MERGE_TIME_H_
@@ -24,6 +46,7 @@
 
 #include "gnu_merge_without_buffer.h"
 #include "merge_without_buffer.h"
+#include "merge_without_buffer_trim4.h"
 #include "merge_without_buffer_trim3.h"
 #include "merge_without_buffer_trim2.h"
 #include "merge_without_buffer_trim1.h"
@@ -113,6 +136,26 @@ std::chrono::nanoseconds TimeStdMergeWithOutBufferOnGivenVec(
 }
 
 template<class T>
+std::chrono::nanoseconds TimeMergeWithOutBuffer4OnGivenVec(std::vector<T> &vec,
+                   const std::vector<T> &vec_original, std::size_t start_second,
+                   std::size_t num_repititions = 1) {
+  std::chrono::nanoseconds total{0};
+  {
+  MergeWithOutBufferTrim4(vec.begin(), vec.begin() + (start_second - 1),
+                          vec.begin() + start_second, vec.end());
+  vec = vec_original;
+  }
+  for (std::size_t i = 0; i < num_repititions; i++) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+    MergeWithOutBufferTrim4(vec.begin(), vec.begin() + (start_second - 1),
+                            vec.begin() + start_second, vec.end());
+    total += std::chrono::high_resolution_clock::now() - start_time;
+    vec = vec_original;
+  }
+  return static_cast<std::chrono::nanoseconds>(total);
+}
+
+template<class T>
 std::chrono::nanoseconds TimeMergeWithOutBuffer3OnGivenVec(std::vector<T> &vec,
                    const std::vector<T> &vec_original, std::size_t start_second,
                    std::size_t num_repititions = 1) {
@@ -176,6 +219,7 @@ struct TotalTimes {
   std::chrono::nanoseconds std_merge{0};
   std::chrono::nanoseconds std_inplace_merge{0};
   std::chrono::nanoseconds merge_without_buffer{0};
+  std::chrono::nanoseconds merge_without_buffer4{0};
   std::chrono::nanoseconds merge_without_buffer3{0};
   std::chrono::nanoseconds merge_without_buffer2{0};
   std::chrono::nanoseconds merge_without_buffer1{0};
@@ -187,6 +231,7 @@ struct TotalTimes {
     std_merge                 += rhs.std_merge;
     std_inplace_merge         += rhs.std_inplace_merge;
     merge_without_buffer      += rhs.merge_without_buffer;
+    merge_without_buffer4     += rhs.merge_without_buffer4;
     merge_without_buffer3     += rhs.merge_without_buffer3;
     merge_without_buffer2     += rhs.merge_without_buffer2;
     merge_without_buffer1     += rhs.merge_without_buffer1;
@@ -224,6 +269,8 @@ struct TotalTimes {
     strm << "Merge algorithms that do not use a buffer:\n";
     strm << "merge_without_buffer ave     = "
          << GetTimeStr(merge_without_buffer, divisor) << '\n';
+    strm << "merge_without_buffer4 ave    = "
+         << GetTimeStr(merge_without_buffer4, divisor) << '\n';
     strm << "merge_without_buffer3 ave    = "
          << GetTimeStr(merge_without_buffer3, divisor) << '\n';
     strm << "merge_without_buffer2 ave    = "
@@ -261,22 +308,28 @@ template<class T> inline TotalTimes TimeMergesOnGivenVec(std::vector<T> &vec,
     std::cout << "TimeMergeWithOutBufferOnGivenVec() Failed." << std::endl;
   }
   try {
+    total_times.merge_without_buffer4 += TimeMergeWithOutBuffer4OnGivenVec(vec,
+                           vec_original, start_second, num_repititions_per_vec);
+  } catch (...) {
+    std::cout << "TimeMergeWithOutBuffer4OnGivenVec() Failed." << std::endl;
+  }
+  try {
     total_times.merge_without_buffer3 += TimeMergeWithOutBuffer3OnGivenVec(vec,
                            vec_original, start_second, num_repititions_per_vec);
   } catch (...) {
-    std::cout << "TimeStdMergeWithOutBuffer2OnGivenVec() Failed." << std::endl;
+    std::cout << "TimeMergeWithOutBuffer3OnGivenVec() Failed." << std::endl;
   }
   try {
     total_times.merge_without_buffer2 += TimeMergeWithOutBuffer2OnGivenVec(vec,
                            vec_original, start_second, num_repititions_per_vec);
   } catch (...) {
-    std::cout << "TimeStdMergeWithOutBuffer2OnGivenVec() Failed." << std::endl;
+    std::cout << "TimeMergeWithOutBuffer2OnGivenVec() Failed." << std::endl;
   }
   try {
     total_times.merge_without_buffer1 += TimeMergeWithOutBuffer1OnGivenVec(vec,
                            vec_original, start_second, num_repititions_per_vec);
   } catch (...) {
-    std::cout << "TimeStdMergeWithOutBuffer1OnGivenVec() Failed." << std::endl;
+    std::cout << "TimeMergeWithOutBuffer1OnGivenVec() Failed." << std::endl;
   }
   try {
     total_times.gnu_merge_without_buffer += TimeStdMergeWithOutBufferOnGivenVec(
@@ -317,8 +370,8 @@ template<class T> TotalTimes TimeMergesOnGivenVecSize(std::size_t vec_size,
   } else if (start_right < -1) {
     std::random_device rnd_device;
     std::mt19937 generator(rnd_device());
-    std::uniform_int_distribution<T> dist(1, vec_size - 1);
-    start_right =  dist(generator);
+    std::uniform_int_distribution<int> dist(1, vec_size - 1);
+    start_right = dist(generator);
   }
   std::vector<T> vec_original(vec_size);
   auto vec = vec_original;
@@ -349,11 +402,10 @@ template<class T> TotalTimes TimeMergesOnGivenVecSize(std::size_t vec_size,
 
     if (print_vec_averages)
       std::cout << times.GetAveragesStr(num_repititions_per_vec);
-
     if (pick_new_start_right_for_each_new_vec) {
       std::random_device rnd_device;
       std::mt19937 generator(rnd_device());
-      std::uniform_int_distribution<T> dist(1, vec_size - 1);
+      std::uniform_int_distribution<int> dist(1, vec_size - 1);
       start_right =  dist(generator);
     }
   }
