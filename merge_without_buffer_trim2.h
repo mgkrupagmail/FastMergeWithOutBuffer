@@ -5,11 +5,9 @@
  *      Author: Matthew Gregory Krupa
  *
  *  A simplified version of MergeWithOutBuffer() that is faster but more
- *   complicated than MergeWithOutBufferTrim 2().
- *  MergeWithOutBufferTrim1() contains the near minimum code needed to make the
- *   merge algorithm work.
- *  It is also the slowest of MergeWithOutBuffer(), MergeWithOutBufferTrim 2(),
- *   and MergeWithOutBufferTrim1().
+ *   complicated than MergeWithOutBufferTrim1().
+ *  It is the slowest of MergeWithOutBuffer(), MergeWithOutBufferTrim 2(),
+ *   and MergeWithOutBufferTrim3().
  */
 
 #ifndef SRC_MERGE_WITHOUT_BUFFER_TRIM2_H_
