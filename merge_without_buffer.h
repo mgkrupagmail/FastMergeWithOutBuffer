@@ -8,24 +8,21 @@
  *  MergeWithOutBufferTrim1() contains the near minimum code needed to make the
  *   merge algorithm work.
  *  MergeWithOutBuffer() is the fastest of MergeWithOutBuffer(),
- *   MergeWithOutBufferTrim 3(), MergeWithOutBufferTrim 2(), and
- *   MergeWithOutBufferTrim1().
+ *   MergeWithOutBufferTrim4(), MergeWithOutBufferTrim3(),
+ *   MergeWithOutBufferTrim2(), and MergeWithOutBufferTrim1().
  */
 
-#ifndef SRC_MERGE_WITHOUT_BUFFER_H_
-#define SRC_MERGE_WITHOUT_BUFFER_H_
-
-#include <algorithm>
-
-#include "merge_common.h"
+#ifndef MERGE_WITHOUT_BUFFER_H_
+#define MERGE_WITHOUT_BUFFER_H_
 
 /* Given two sorted ranges of values that are contiguous in memory as
- *  [start_left : end_right] this function will try to increase start_left
- *  and decrease end_right as much as possible using only simple comparisons
- *  and swaps near the ends of these two subintervals.
+ *  [start_left : end_right] this function will try function will try to
+ *  increase start_left and decrease end_right as much as possible using only
+ *  simple comparisons and switches near the ends of these two subintervals.
  * Assumes that both [start_left : end_left] and [start_right : end_right] are
- *  sorted in non-decreasing order, and that
- *  start_left <= end_left and start_right - 1 < start_right <= end_right.
+ *  sorted in increasing order, and that
+ *  start_left <= end_left == start_right - 1 < start_right <= end_right
+ *  (IMPORTANT: Note the "end_left == start_right - 1")
  *
  * If *end_left <= *start_right then we make the intervals invalid. i.e.
  *  set start_left_out = end_left_out + 1; start_right_out = end_right_out + 1;
@@ -47,19 +44,21 @@
  *  guaranteed that:
  *  a) *start_left > *(start_right + 2)
  *  b) *end_right  < *(end_left - 2)
- * (4) If after execution completes both subranges have length >= 4, (i.e.
- *  end_left + 1 - start_left >= 4 and end_left + 1 - start_right >= 4)
- *  then it is guaranteed that:
+ * (4) If after execution completes both subranges have length >= 4, then it is
+ *  guaranteed that:
  *  a) *start_left > *(start_right + 3)
  *  b) *end_right  < *(end_left - 3)
+ * (5) If after execution completes both subranges have length >= 5, then it is
+ *  guaranteed that:
+ *  a) *start_left > *(start_right + 4)
+ *  b) *end_right  < *(end_left - 4)
  * If after execution completes, start_right > end_right or start_left >end_left
- *  then this indicates that the two subranges have been completely merged into
- *  a single non-decreasing range;
- * OTHERWISE both subranges have length >= 2 (i.e. start_left < end_left &&
+ *  then the two subranges have been completely merged;
+ *  OTHERWISE both subranges have length >= 2 (i.e. start_left < end_left &&
  *   start_right < end_right).
  */
 template<class RAI, class RAI2>
-void TrimEnds4(RAI &start_left_out,   RAI &end_left_out,
+void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
               RAI2 &start_right_out, RAI2 &end_right_out) {
   auto start_left  = start_left_out,  end_left  = end_left_out;
   auto start_right = start_right_out, end_right = end_right_out;
@@ -72,6 +71,7 @@ void TrimEnds4(RAI &start_left_out,   RAI &end_left_out,
       end_right_out    = end_right;
       return ;
     }
+
     //If true, then this implies that start_left < end_left
     if (*start_left <= *start_right)
       start_left = SmallestIteratorWithValueGreaterThan_KnownToExist(
@@ -242,6 +242,7 @@ void TrimEnds4(RAI &start_left_out,   RAI &end_left_out,
       continue ;
     }
 
+    //At this point, start_right + 3 <= end_right and start_left + 2 <= end_left
     if (*(start_right + 3) >= *start_left) {
       if (*(start_right + 3) >= *(start_left + 2)) {
         std::iter_swap(start_left, start_right);
@@ -271,6 +272,122 @@ void TrimEnds4(RAI &start_left_out,   RAI &end_left_out,
         *start_right       = *(start_right + 1);
         *(start_right + 1) = *(start_right + 2);
         *(start_right + 2) = temp;
+        start_left       = start_left + 1;
+      }
+      if (start_left >= end_left || *start_left >= *end_right) {
+        is_trivial = true;
+        break;
+      }
+      continue ;
+    }
+
+    //At this point, end_left - 4 >= start_left and end_right - 3 >= start_right
+    if (*(end_left - 4) <= *end_right) {
+      if (end_right - 3 >= start_right && *(end_left - 4) <= *(end_right - 3)) {
+        std::iter_swap(end_left - 3, end_right - 3);
+        std::iter_swap(end_left - 2, end_right - 2);
+        std::iter_swap(end_left - 1, end_right - 1);
+        std::iter_swap(end_left, end_right);
+        end_right = end_right - 4;
+      }
+      //At this point, *(end_left - 4) > *(end_right - 3).
+      else if (*(end_left - 4) <= *(end_right - 2)) {
+        //Rotate end_left - 3, end_left - 2, end_left - 1, end_left,
+        // end_right - 1, end_right to the right by 3.
+        auto temp        = *end_right;
+        *end_right       = *end_left;
+        *end_left        = *(end_left - 3);
+        *(end_left - 3)  = *(end_right - 2);
+        *(end_right - 2) = *(end_left - 2);
+        *(end_left - 2)  = *(end_right - 1);
+        *(end_right - 1) = *(end_left - 1);
+        *(end_left - 1)  = temp;
+        end_right        = end_right - 3;
+      }
+      //At this point, *(end_left - 4) > *(end_right - 2).
+      else if (*(end_left - 4) <= *(end_right - 1)) {
+        //Rotate end_left - 3, end_left - 2, end_left - 1, end_left,
+        // end_right - 1, end_right to the right by 2.
+        auto temp        = *end_left;
+        *end_left        = *(end_left - 2);
+        *(end_left - 2)  = *end_right;
+        *end_right       = temp;
+        auto temp2       = *(end_left - 1);
+        *(end_left - 1)  = *(end_left - 3);
+        *(end_left - 3)  = *(end_right - 1);
+        *(end_right - 1) = temp2;
+        end_right        = end_right - 2;
+
+      }
+      //At this point, *(end_left - 4) > *(end_right - 1) and
+      // *(end_left - 4) <= *end_right.
+      else {
+        //Rotate end_left - 3, end_left - 2, end_left - 1, end_left, end_right
+        // to the right by 1.
+        auto temp       = *end_right;
+        *end_right      = *end_left;
+        *end_left       = *(end_left - 1);
+        *(end_left - 1) = *(end_left - 2);
+        *(end_left - 2) = *(end_left - 3);
+        *(end_left - 3) = temp;
+        end_right       = end_right - 1;
+      }
+      if (start_right >= end_right || *start_left >= *end_right) {
+        is_trivial = true;
+        break;
+      }
+      continue ;
+    }
+
+    //At this point, start_right + 4 <= end_right and start_left + 3 <= end_left
+    if (*(start_right + 4) >= *start_left) {
+assert(start_left + 3 <= end_left);
+      if (*(start_right + 4) >= *(start_left + 3)) {
+        std::iter_swap(start_left, start_right);
+        std::iter_swap(start_left + 1, start_right + 1);
+        std::iter_swap(start_left + 2, start_right + 2);
+        std::iter_swap(start_left + 3, start_right + 3);
+        start_left = start_left + 4;
+      }
+      //At this point *(start_right + 4) < *(start_left + 3).
+      else if (*(start_right + 4) >= *(start_left + 2)) {
+        //Rotate start_left, start_left + 1, start_left + 2, start_right,
+        // start_right + 1, start_right + 2, start_right + 3 to the left by 3.
+        auto temp          = *start_right;
+        *start_right       = *(start_right + 3);
+        *(start_right + 3) = *(start_left + 2);
+        *(start_left + 2)  = *(start_right + 2);
+        *(start_right + 2) = *(start_left + 1);
+        *(start_left + 1)  = *(start_right + 1);
+        *(start_right + 1) = * start_left;
+        *start_left        = temp;
+        start_left         = start_left + 3;
+      }
+      //At this point *(start_right + 4) < *(start_left + 2).
+      else if (*(start_right + 4) >= *(start_left + 1)) {
+        //Rotate start_left, start_left + 1, start_right, start_right + 1,
+        // start_right + 2, start_right + 3 to the left by 2.
+        auto temp          = *start_right;
+        *start_right       = *(start_right + 2);
+        *(start_right + 2) = *start_left;
+        *start_left        = temp;
+        auto temp2         = *(start_right + 1);
+        *(start_right + 1) = *(start_right + 3);
+        *(start_right + 3) = *(start_left + 1);
+        *(start_left + 1)  = temp2;
+        start_left         = start_left + 2;
+      }
+      //At this point *(start_right + 3) < *(start_left + 1)) and
+      // *(start_right + 4) >= *start_left.
+      else {
+        //Rotate start_left, start_right, start_right + 1, start_right + 2,
+        // start_right + 3 to the left by 1.
+        auto temp          = *start_left;
+        *start_left        = *start_right;
+        *start_right       = *(start_right + 1);
+        *(start_right + 1) = *(start_right + 2);
+        *(start_right + 2) = *(start_right + 3);
+        *(start_right + 3) = temp;
         start_left       = start_left + 1;
       }
       if (start_left >= end_left || *start_left >= *end_right) {
@@ -316,12 +433,21 @@ void TrimEnds4(RAI &start_left_out,   RAI &end_left_out,
   return ;
 }
 
-//Assumes that start_left <= start_right
+/*Assumes that start_left <= start_right and start_right <= end_right and that
+ * the values of the intervals of iterators [start_left, end_left] and
+ * [start_right, end_right] are non-decreasing.
+ *
+ * The reason why this particular function is distinguished with the name
+ *  MergeWithOutBuffer() rather than MergeWithOutBufferTrim5(), which would have
+ *  continued the patter of names MergeWithOutBufferTrim1(), ...,
+ *  MergeWithOutBufferTrim4() is explained in the comment at the top of
+ *  merge_time.h.
+ */
 template<class RAI, class RAI2>
 void MergeWithOutBuffer(RAI start_left,   RAI end_left,
                         RAI2 start_right, RAI2 end_right) {
   int length_left, length_right, length_smaller, d;
-  TrimEnds4(start_left, end_left, start_right, end_right);
+  TrimEnds5(start_left, end_left, start_right, end_right);
   length_left  = std::distance(start_left, end_left + 1);
   length_right = std::distance(start_right, end_right + 1);
   length_smaller = length_left < length_right ? length_left : length_right;
