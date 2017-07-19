@@ -25,6 +25,7 @@
 
 #include "misc_helpers.h"
 #include "merge_without_buffer.h"
+#include "merge_without_buffer_trim4.h"
 #include "merge_without_buffer_trim3.h"
 #include "merge_without_buffer_trim2.h"
 #include "merge_without_buffer_trim1.h"
@@ -81,9 +82,9 @@ bool TestCorrectnessVerifyNondecreasing(std::vector<T> &vec,
             int original_start_left, int original_end_left,
             int original_start_right, int original_end_right) {
   bool is_left_non_decreasing  = IsNonDecreasing(vec.begin()
-                       + original_start_left,  vec.begin() + original_end_left);
+                   + original_start_left,  vec.begin() + original_end_left + 1);
   bool is_right_non_decreasing = IsNonDecreasing(vec.begin()
-                      + original_start_right, vec.begin() + original_end_right);
+                  + original_start_right, vec.begin() + original_end_right + 1);
   if (!(is_left_non_decreasing && is_right_non_decreasing && vec[end_left]
                                                          <= vec[start_right])) {
     auto original_length_left  = original_end_left  + 1 - original_start_left;
@@ -146,7 +147,7 @@ bool MergeTwoSortedSubvectorsTestCorrectness(int vec_size,
   if (end_right == -1)
     end_right = vec_size - 1;
   TestCorrectnessVerifyInputs(vec_size, start_left, end_left, start_right,
-                              end_right);
+                                 end_right);
 
   std::vector<T> vec_original(vec_size);
   FillWithRandomNumbers(vec_original.begin(), vec_original.end(),
@@ -221,13 +222,13 @@ bool MergeTwoSortedSubvectorsTestCorrectness(int vec_size,
   } else {
     std::random_device rnd_device;
     std::mt19937 generator(rnd_device());
-    std::uniform_int_distribution<T> dist(1, vec_size - 1);
-    start_right =  dist(generator);
+    std::uniform_int_distribution<int> dist(1, vec_size - 1);
+    start_right = dist(generator);
   }
   auto start_left  = 0;
   auto end_left    = start_right - 1;
   auto end_right   = vec_size - 1;;
-  return MergeTwoSortedSubvectorsTestCorrectness(vec_size,
+  return MergeTwoSortedSubvectorsTestCorrectness<T>(vec_size,
             vec_that_it_failed_on, start_left, end_left, start_right, end_right,
             verbose,lower_bound, upper_bound);
 }
@@ -252,8 +253,8 @@ bool TestCorrectnessOfMerge(int vec_size,
                     T lower_bound = std::numeric_limits<T>::min(),
                     T upper_bound = std::numeric_limits<T>::max()) {
   for (unsigned int i = 0; i < num_tests_per_vec_size; i++) {
-    std::vector<int> any_vec_object;
-    auto result = MergeTwoSortedSubvectorsTestCorrectness(vec_size,
+    std::vector<T> any_vec_object;
+    auto result = MergeTwoSortedSubvectorsTestCorrectness<T>(vec_size,
                     any_vec_object, should_randomly_pick_start_right, verbose,
                     lower_bound, upper_bound);
 
