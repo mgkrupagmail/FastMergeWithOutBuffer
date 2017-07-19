@@ -30,9 +30,6 @@
  *  MergeWithOutBufferTrim5() in order to fit the pattern).
  */
 
-//#include "merge_time_dev.h"
-//#define SRC_MERGE_TIME_H_
-
 #ifndef SRC_MERGE_TIME_H_
 #define SRC_MERGE_TIME_H_
 
