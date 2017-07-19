@@ -3,6 +3,10 @@
  *
  *  Created on: Jul 15, 2017
  *      Author: Matthew Gregory Krupa
+ *
+ *  A simplified version of MergeWithOutBuffer() that is faster but more
+ *   complicated than MergeWithOutBufferTrim2() and slower than
+ *   MergeWithOutBuffer().
  */
 
 #ifndef SRC_MERGE_WITHOUT_BUFFER_TRIM3_H_
