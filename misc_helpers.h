@@ -137,4 +137,21 @@ void PrintNondecreasingSubsequences(RAI start, std::size_t length,
   ostrm.flush();
 }
 
+/* Helper function for VerifyMergeIsInplace() andVerifyMergeIsInplace().
+ */
+template<class T>
+void PrintTwoSortedVectorsInfo(const std::vector<T> &vec, int start_left,
+                               int end_left, int start_right, int end_right) {
+    std::cout << "start_left = "   << start_left          << "\tend_left =\t"
+              << end_left          << "\tstart_right =\t" << start_right
+              << "\tend_right =\t" << end_right           << std::endl;
+    auto length_left  = end_left  + 1 - start_left;
+    auto length_right = end_right + 1 - start_right;
+    PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left,
+                                   false);
+    PrintNondecreasingSubsequences(vec.begin() + start_right, length_right,
+                                   true);
+    return ;
+}
+
 #endif /* SRC_MISC_HELPERS_H_ */
