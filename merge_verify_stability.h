@@ -2,7 +2,7 @@
  * merge_verify_stability.h
  *
  *  Created on: Jul 27, 2017
- *      Author: diagoras
+ *      Author: Matthew Gregory Krupa
  */
 
 #ifndef SRC_MERGE_VERIFY_STABILITY_H_
@@ -55,7 +55,7 @@ bool VerifyMergeStability(std::vector<ObjectAndIndex<T>> &vec) {
     }
   }
   if (!result) {
-    std::cout << "The merging was not inplace.\n";
+    std::cout << "The merging was not stable.\n";
     PrintLine("-");
   }
   return result;
@@ -169,7 +169,7 @@ bool VerifyMergeStability(int vec_size,
                     any_vec_object, should_randomly_pick_start_right, verbose,
                     lower_bound, upper_bound);
     if (!result) {
-      std::cout << "Failed to merge the following vectors:" << std::endl;
+      std::cout << "Failed to stabily merge the following vectors:" << std::endl;
       auto start_right = 1;
       //Find start_right.
       while (start_right < vec_size && any_vec_object[start_right - 1] <=
