@@ -55,23 +55,6 @@ void TestCorrectnessVerifyInputs(int vec_size, int start_left, int end_left,
 }
 
 /* Helper function for MergeTwoSortedSubvectorsTestCorrectness().
- */
-template<class T>
-void PrintVectorInfo(const std::vector<T> &vec, int start_left,
-            int end_left, int start_right, int end_right) {
-    std::cout << "start_left = "   << start_left          << "\tend_left =\t"
-              << end_left          << "\tstart_right =\t" << start_right
-              << "\tend_right =\t" << end_right           << std::endl;
-    auto length_left  = end_left  + 1 - start_left;
-    auto length_right = end_right + 1 - start_right;
-    PrintNondecreasingSubsequences(vec.begin() + start_left,  length_left,
-                                   false);
-    PrintNondecreasingSubsequences(vec.begin() + start_right, length_right,
-                                   true);
-    return ;
-}
-
-/* Helper function for MergeTwoSortedSubvectorsTestCorrectness().
  * Checks if vec is non-decreasing, in which case it returns true.
  * Otherwise, it prints an error message and returns false.
  */
@@ -101,7 +84,7 @@ bool TestCorrectnessVerifyNondecreasing(std::vector<T> &vec,
                                    original_length_left, false);
     PrintNondecreasingSubsequences(vec.begin() + original_start_right,
                                    original_length_right, true);
-    PrintVectorInfo(vec, start_left, end_left, start_right, end_right);
+    PrintTwoSortedVectorsInfo(vec, start_left, end_left, start_right, end_right);
     PrintLine("-");
     return false;
   }
@@ -161,7 +144,7 @@ bool MergeTwoSortedSubvectorsTestCorrectness(int vec_size,
 
   if (verbose) {
     PrintLine("_");
-    PrintVectorInfo(vec, start_left, end_left, start_right, end_right);
+    PrintTwoSortedVectorsInfo(vec, start_left, end_left, start_right, end_right);
   }
   const int original_start_left   = start_left;
   const int original_start_right  = start_right;
@@ -170,7 +153,7 @@ bool MergeTwoSortedSubvectorsTestCorrectness(int vec_size,
 
   if (verbose) {
     PrintLine("_");
-    PrintVectorInfo(vec, start_left, end_left, start_right, end_right);
+    PrintTwoSortedVectorsInfo(vec, start_left, end_left, start_right, end_right);
   }
 
   MergeWithOutBuffer(vec.begin() + start_left,  vec.begin() + end_left,
@@ -186,7 +169,7 @@ bool MergeTwoSortedSubvectorsTestCorrectness(int vec_size,
 
   if (verbose) {
     PrintLine("-");
-    PrintVectorInfo(vec, start_left, end_left, start_right, end_right);
+    PrintTwoSortedVectorsInfo(vec, start_left, end_left, start_right, end_right);
   }
   return true;
 }
@@ -247,17 +230,16 @@ bool MergeTwoSortedSubvectorsTestCorrectness(int vec_size,
  */
 template<typename T>
 bool TestCorrectnessOfMerge(int vec_size,
-                    unsigned int num_tests_per_vec_size = 1,
-                    bool should_randomly_pick_start_right = true,
-                    bool verbose = false,
-                    T lower_bound = std::numeric_limits<T>::min(),
-                    T upper_bound = std::numeric_limits<T>::max()) {
+                            unsigned int num_tests_per_vec_size = 1,
+                            bool should_randomly_pick_start_right = true,
+                            bool verbose = false,
+                            T lower_bound = std::numeric_limits<T>::min(),
+                            T upper_bound = std::numeric_limits<T>::max()) {
   for (unsigned int i = 0; i < num_tests_per_vec_size; i++) {
     std::vector<T> any_vec_object;
     auto result = MergeTwoSortedSubvectorsTestCorrectness<T>(vec_size,
                     any_vec_object, should_randomly_pick_start_right, verbose,
                     lower_bound, upper_bound);
-
     if (!result) {
       std::cout << "Failed to merge the following vectors:" << std::endl;
       auto start_right = 1;
@@ -271,7 +253,6 @@ bool TestCorrectnessOfMerge(int vec_size,
       return false;
     }
   }
-
   return true;
 }
 
