@@ -341,7 +341,6 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
 
     //At this point, start_right + 4 <= end_right and start_left + 3 <= end_left
     if (*(start_right + 4) >= *start_left) {
-assert(start_left + 3 <= end_left);
       if (*(start_right + 4) >= *(start_left + 3)) {
         std::iter_swap(start_left, start_right);
         std::iter_swap(start_left + 1, start_right + 1);
