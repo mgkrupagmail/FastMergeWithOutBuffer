@@ -3,6 +3,7 @@
  *
  *  Created on: Jun 29, 2017
  *      Author: Matthew Gregory Krupa
+ *      Copyright: Matthew Gregory Krupa 
  *
  *  The most important function defined in this file is MergeWithOutBuffer().
  *  MergeWithOutBufferTrim1() contains the near minimum code needed to make the
@@ -14,6 +15,8 @@
 
 #ifndef MERGE_WITHOUT_BUFFER_H_
 #define MERGE_WITHOUT_BUFFER_H_
+
+#include "merge_common.h"
 
 /* Given two sorted ranges of values that are contiguous in memory as
  *  [start_left : end_right] this function will try function will try to
