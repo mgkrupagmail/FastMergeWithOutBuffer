@@ -18,9 +18,9 @@
  *  both access to objects of the same type (i.e. *start1 and *start2
  *  must be objects of the same type).
  * 
- * Assumes that start_left <= start_right and start_right <= end_right and that
- *  the values of the intervals of iterators [start_left, end_left] and
- *  [start_right, end_right] are non-decreasing.
+ * Assumes that start1 <= end1 and start2 <= end2 and that
+ *  the values of the intervals of iterators [start1, end1] and
+ *  [start2, end2] are non-decreasing.
  *
  * This function will rearrange all elements so that
  *  *start1 <= *(start1 + 1) <= ... <= *end1 <= *start2 <= *(start2 + 1) <= ... <= *end2
