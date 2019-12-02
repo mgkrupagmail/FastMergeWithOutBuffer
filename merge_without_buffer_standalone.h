@@ -3,11 +3,33 @@
  *
  *  Created on: Dec 1, 2019
  *      Author: Matthew Gregory Krupa
+ *      Copyright: Matthew Gregory Krupa 
  *
- *  The most important function defined in this file is MergeWithOutBuffer(),
- *   which is defined at the very end of this file.
+ *  The most important function defined in this file is 
+ * 
+ *   template<class RAI, class RAI2>
+ *   inline void MergeWithOutBuffer(RAI start1,  RAI end1,
+ *                                  RAI2 start2, RAI2 end2)
+ * 
+ * which is defined at the very end of this file.
  *
- *  RAI stands for Random Access Iterator
+ * Assumes that RAI and RAI2 are both Random Access Iterators.
+ * Note that RAI and RAI2 need not be the same type but they must
+ *  both access to objects of the same type (i.e. *start1 and *start2
+ *  are objects of the same type).
+ * 
+ * Assumes that start_left <= start_right and start_right <= end_right and that
+ *  the values of the intervals of iterators [start_left, end_left] and
+ *  [start_right, end_right] are non-decreasing.
+ *
+ * This function will rearrange all elements so that
+ *  *start1 <= *(start1 + 1) <= ... <= *end1 <= *start2 <= *(start2 + 1) <= ... <= *end2
+ * (Note that start1 == end1 is allowed so that *(start1 + 1) need not
+ *   actually be defined. Similarily start2 == end2 is allowed.)
+ *
+ * This function uses O(1) additional memory and has worst case O(N log N) 
+ *  time complexity, where N is the total number of elements in both sequences.
+ * This algorithm is both inplace and stable.
  */
 
 #ifndef SRC_MERGE_WITHOUT_BUFFER_STANDALONE_H_
@@ -698,7 +720,7 @@ void MergeWithOutBuffer(RAI start_left,   RAI end_left,
 
 /* Assumes that RAI and RAI2 are both Random Access Iterators.
  * Note that RAI and RAI2 need not be the same type but they must
- *  both refer to elements of the same type (i.e. *start1 and *start2
+ *  both access to objects of the same type (i.e. *start1 and *start2
  *  are objects of the same type).
  *
  * Assumes that the two sequences of elements:
@@ -714,9 +736,10 @@ void MergeWithOutBuffer(RAI start_left,   RAI end_left,
  *
  * This function uses O(1) additional memory and has worst case
  *   O(N log N) complexity, where N is the number of elements in both sequences.
+ * This algorithm is both inplace and stable.
  */
 template<class RAI, class RAI2>
-inline void MergeWithOutBuffer(RAI start1, RAI end1,
+inline void MergeWithOutBuffer(RAI start1,  RAI end1,
                                RAI2 start2, RAI2 end2) {
   MergeWithoutBufferNamespace::MergeWithOutBuffer(start1, end1, start2, end2);
 }
