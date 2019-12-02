@@ -16,7 +16,7 @@
  * Assumes that RAI and RAI2 are both Random Access Iterators.
  * Note that RAI and RAI2 need not be the same type but they must
  *  both access to objects of the same type (i.e. *start1 and *start2
- *  are objects of the same type).
+ *  must be objects of the same type).
  * 
  * Assumes that start_left <= start_right and start_right <= end_right and that
  *  the values of the intervals of iterators [start_left, end_left] and
@@ -721,7 +721,7 @@ void MergeWithOutBuffer(RAI start_left,   RAI end_left,
 /* Assumes that RAI and RAI2 are both Random Access Iterators.
  * Note that RAI and RAI2 need not be the same type but they must
  *  both access to objects of the same type (i.e. *start1 and *start2
- *  are objects of the same type).
+ *  must be objects of the same type).
  *
  * Assumes that the two sequences of elements:
  * *start1, *(start1 + 1), ..., *end1
