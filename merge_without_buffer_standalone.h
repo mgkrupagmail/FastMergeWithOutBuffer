@@ -3,31 +3,30 @@
  *
  *  Created on: Dec 1, 2019
  *      Author: Matthew Gregory Krupa
- *      Copyright: Matthew Gregory Krupa 
+ *      Copyright: Matthew Gregory Krupa
  *
- *  The most important function defined in this file is 
- * 
+ *  The main function defined in this file is
+ *
  *   template<class RAI, class RAI2>
- *   inline void MergeWithOutBuffer(RAI start1,  RAI end1,
- *                                  RAI2 start2, RAI2 end2)
- * 
- * which is defined at the very end of this file.
+ *   void MergeWithOutBuffer(RAI  start1, RAI  end1,
+ *                           RAI2 start2, RAI2 end2)
  *
- * Assumes that RAI and RAI2 are both Random Access Iterators.
+ * which is defined at the very end of this file.
+ * It is assumed that RAI and RAI2 are both Random Access Iterators.
  * Note that RAI and RAI2 need not be the same type but they must
- *  both access to objects of the same type (i.e. *start1 and *start2
+ *  each access objects of the same type (i.e. *start1 and *start2
  *  must be objects of the same type).
- * 
+ *
  * Assumes that start1 <= end1 and start2 <= end2 and that
  *  the values of the intervals of iterators [start1, end1] and
- *  [start2, end2] are non-decreasing.
+ *  [start2, end2] are each non-decreasing.
  *
  * This function will rearrange all elements so that
  *  *start1 <= *(start1 + 1) <= ... <= *end1 <= *start2 <= *(start2 + 1) <= ... <= *end2
  * (Note that start1 == end1 is allowed so that *(start1 + 1) need not
  *   actually be defined. Similarily start2 == end2 is allowed.)
  *
- * This function uses O(1) additional memory and has worst case O(N log N) 
+ * This function uses O(1) additional memory and has worst case O(N log N)
  *  time complexity, where N is the total number of elements in both sequences.
  * This algorithm is both inplace and stable.
  */
@@ -305,7 +304,7 @@ ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(
  */
 template<class RAI, class RAI2>
 void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
-              RAI2 &start_right_out, RAI2 &end_right_out) {
+               RAI2 &start_right_out, RAI2 &end_right_out) {
   auto start_left  = start_left_out,  end_left  = end_left_out;
   auto start_right = start_right_out, end_right = end_right_out;
   bool is_trivial = false;
@@ -739,7 +738,7 @@ void MergeWithOutBuffer(RAI start_left,   RAI end_left,
  * This algorithm is both inplace and stable.
  */
 template<class RAI, class RAI2>
-inline void MergeWithOutBuffer(RAI start1,  RAI end1,
+inline void MergeWithOutBuffer(RAI  start1, RAI  end1,
                                RAI2 start2, RAI2 end2) {
   MergeWithoutBufferNamespace::MergeWithOutBuffer(start1, end1, start2, end2);
 }
