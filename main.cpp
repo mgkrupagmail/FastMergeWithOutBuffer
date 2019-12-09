@@ -63,7 +63,7 @@
 int main() {
   std::ios::sync_with_stdio(false);
   //Calling TestCorrectnessOfMerge()
-  int vec_size_start = 2;
+  int vec_size_start = (1u << 5);
   int vec_size_end = (1 << 10);
   unsigned int num_tests_per_vec_size = (1 << 3);
   bool should_randomly_pick_start_right = true;
