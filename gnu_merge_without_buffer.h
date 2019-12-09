@@ -1,4 +1,10 @@
- // Copyright (C) 2001-2014 Free Software Foundation, Inc.
+/*
+ * gnu_merge_without_buffer.h
+ *
+ *  Created on: Dec 7, 2019
+ *      Author: Matthew Gregory Krupa
+ */
+// Copyright (C) 2001-2014 Free Software Foundation, Inc.
  //
  // This file is part of the GNU ISO C++ Library.  This library is free
  // software; you can redistribute it and/or modify it under the
@@ -49,6 +55,7 @@
  * https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01499_source.html
  */
 
+
 #ifndef SRC_GNU_MERGE_WITHOUT_BUFFER_H_
 #define SRC_GNU_MERGE_WITHOUT_BUFFER_H_
 
@@ -56,8 +63,9 @@
 
 namespace gnu {
 /* The following gnu__merge_without_buffer() function is taken directly from
- *  the GNU public library. Its definition (as of 29 June 2017) can be found here:
- *  https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01499_source.html#l02491
+ *  the GNU public library. Its definition (as of 7 December 2019) can be found
+ *  here:
+ *  https://gcc.gnu.org/onlinedocs/gcc-9.2.0/libstdc++/api/a00530_source.html#l02471
  * Due to the definition of the stl_algo.h header, it is unfortunately not
  *  possible to directly call the function __merge_without_buffer(),
  *  which necessitated the creation of the gnu__merge_without_buffer() function
@@ -70,10 +78,11 @@ namespace gnu {
  * (3) std::__upper_bound was changed to std::upper_bound
  * (4) __gnu_cxx::__ops::__iter_comp_val(__comp) was changed to __comp
  * (5) __gnu_cxx::__ops::__val_comp_iter(__comp) was changed to __comp
+ * (6) Replaced if (__comp(__middle, __first)) with if (__comp(*__middle, *__first))
  * These are the only modification that were made to the original function
  *  whose original definition can be found in the link to the public GNU
  *  library provided above. Since we will be sorting elements of type int,
- *  there should not be, at least in theory, any difference in performance  
+ *  there should not be, at least in theory, any difference in performance
  *  between gnu__merge_without_buffer() and __merge_without_buffer().
  */
 template<typename _BidirectionalIterator, typename _Distance,
@@ -89,7 +98,7 @@ template<typename _BidirectionalIterator, typename _Distance,
       return;
         if (__len1 + __len2 == 2)
       {
-        if (__comp(__middle, __first))
+        if (__comp(*__middle, *__first))
           std::iter_swap(__first, __middle);
         return;
       }
@@ -124,5 +133,8 @@ template<typename _BidirectionalIterator, typename _Distance,
                     __len1 - __len11, __len2 - __len22, __comp);
       }
 }
+
+
+
 
 #endif /* SRC_GNU_MERGE_WITHOUT_BUFFER_H_ */
