@@ -4,9 +4,61 @@
  *  Created on: Jun 29, 2017
  *      Author: Matthew Gregory Krupa
  */
+/*============================================================================
+ *  Name        : main.cpp
+ *  Author      : Matthew Gregory Krupa
+ *  Version     : 1.0
+ *  Copyright   : Any thing that's neither public domain nor already
+ *                 owned by someone (as of March 24, 2017), I hereby copywrite
+ *                 to the maximum extent allowed by law. :)
+ *  Description : The primary algorithm of interest here would be QuickMidSelectSubdivideSort()
+ *                (1) A selection algorithm QuickMidSelect() that for large vectors
+ *                    of primitive types, is faster than the g++ libstdc++'s
+ *                     std::nth_element() about half the time.
+ *                (2) A sorting algorithm QuickMidSelectSubdivideSort() based on QuickMidSelect() that
+ *                    for large vectors of primitive types, is usually around 10-20%
+ *                    faster than g++ libstdc++'s  std::sort() (i.e. introsort).
+ *                (3) An algorithm similar to QuickMidSelect(), called QuickMidMedian(),
+ *                    that for large vectors of primitive types, finds the
+ *                    median faster than the 1 or 2 calls to std::nth_element()
+ *                    that would otherwise be required to compute it.
+ *  I implemented QuickMidMedian() before I implemented QuickMidSelect() so QuickMidMedian()
+ *   has most of the comments explaining how these algorithms work, why they're
+ *   generally so fast, why the above description emphasized primitive types,
+ *   and when these algorithms can be applied to non-primitive types.
+ *  To test these algorithms, scroll down to main() and un-comment out which ever
+ *   of the tests (i.e. SortingComparison(), SelectComparison (), MedianComparison())
+ *   you want to run.
+ *  In general, the larger the size of the vector, the bigger the difference in
+ *   speed between my algorithms and the corresponding std:: algorithms. The same
+ *   is true for vectors that take on a larger range of values. However, sometimes
+ *   an algorithm (referring to all algorithms here, not just my own) gets
+ *   lucky by say, selecting the right pivot or having a distribution of data
+ *   that is somehow amiable for that algorithm. So there can be some variability
+ *   if differences in speed.
+ * ============================================================================
+ */
+
+#include <cassert>
+
+#include <algorithm>
+#include <chrono>
+#include <iostream>
+#include <limits>
+#include <numeric>
+#include <random>
+#include <vector>
+
+
+#include "random_helpers.h"
+
+#include "merge_common.h"
 #include "merge_without_buffer.h"
 #include "merge_test_correctness.h"
 #include "merge_time.h"
+#include "merge_verify_stability.h"
+
+
 
 int main() {
   std::ios::sync_with_stdio(false);
@@ -17,9 +69,6 @@ int main() {
   bool should_randomly_pick_start_right = true;
   for (auto vec_size = vec_size_start; vec_size <= vec_size_end; vec_size++)
     TestCorrectnessOfMerge(vec_size, num_tests_per_vec_size, should_randomly_pick_start_right, false, 0, 10*vec_size);
-
-
-  std::ios::sync_with_stdio(false);
 
   typedef double ValueType;
   std::size_t vec_size_lower_bound = vec_size_start;
@@ -64,3 +113,4 @@ int main() {
   std::cout.flush();
   return 0;
 }
+/**/
