@@ -66,11 +66,10 @@ namespace gnu {
  * (1) the name of this function was changed from
  *  __merge_without_buffer to gnu__merge_without_buffer and two instances of
  *  std::__merge_without_buffer were changed to gnu__merge_without_buffer.
- * (2) if (__comp(__middle, __first)) was changed to if (__middle < __first)
- * (3) std::__lower_bound was changed to std::lower_bound
- * (4) std::__upper_bound was changed to std::upper_bound
- * (5) __gnu_cxx::__ops::__iter_comp_val(__comp) was changed to __comp
- * (6) __gnu_cxx::__ops::__val_comp_iter(__comp) was changed to __comp
+ * (2) std::__lower_bound was changed to std::lower_bound
+ * (3) std::__upper_bound was changed to std::upper_bound
+ * (4) __gnu_cxx::__ops::__iter_comp_val(__comp) was changed to __comp
+ * (5) __gnu_cxx::__ops::__val_comp_iter(__comp) was changed to __comp
  * These are the only modification that were made to the original function
  *  whose original definition can be found in the link to the public GNU
  *  library provided above. Since we will be sorting elements of type int,
@@ -90,7 +89,7 @@ template<typename _BidirectionalIterator, typename _Distance,
       return;
         if (__len1 + __len2 == 2)
       {
-        if (__middle < __first)//if (__comp(__middle, __first))
+        if (__comp(__middle, __first))
           std::iter_swap(__first, __middle);
         return;
       }
