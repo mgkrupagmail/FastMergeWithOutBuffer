@@ -27,7 +27,7 @@
  */
 template<class RAI>
 int DisplacementFromMiddleIteratorToPotentialMedians_KnownToExist(
-                         const RAI end_left,const RAI start_right, int length) {
+                        const RAI end_left,const RAI start_right, int length) {
   (void)length--;  //We will now use length_left as if it were d_upper.
   int d_lower = 0; //So that end_left - d_lower = end_left
   do {
@@ -46,7 +46,6 @@ int DisplacementFromMiddleIteratorToPotentialMedians_KnownToExist(
  *  except that it finds the resulting start_it via a binary search.
  * In addition to performing a binary search, it simultaneously performs a
  *  linear search starting from the end_it.
- * SE = inputs are start_it and end_it.
  */
 template<class ForwardIterator, class T>
 ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(
@@ -90,7 +89,7 @@ ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(
 template<class RAI, class T>
 inline RAI LargestIteratorWithValueLessThan_KnownToExist(RAI start_it,
                                                    RAI end_it, const T value) {
-  while (true) {//Use: while(start_it < end_it){ if the d is not known to exist.
+  while (true) {//Use:while(start_it < end_it){ if the d is not known to exist.
     //The below three lines are optional. They are performed at most
     // std::distance(d, end_it) + 1 times.
     if (*end_it < value) {
@@ -128,7 +127,8 @@ inline RAI LargestIteratorWithValueLessThan_KnownToExist(RAI start_it,
  * This is a helper function for MergeTrivialCases().
  */
 template<class RAI>
-inline void RotateLeftByExactlyOneElement(RAI start, RAI end, RAI ele_to_shift) {
+inline void RotateLeftByExactlyOneElement(RAI start, RAI end,
+                                          RAI ele_to_shift) {
   const auto value = *ele_to_shift;
   if (*start >= value)
     return ;
@@ -153,7 +153,8 @@ inline void RotateLeftByExactlyOneElement(RAI start, RAI end, RAI ele_to_shift) 
  * This is a helper function for MergeTrivialCases().
  */
 template<class RAI>
-inline void RotateRightByExactlyOneElement(RAI start, RAI end, RAI ele_to_shift) {
+inline void RotateRightByExactlyOneElement(RAI start, RAI end,
+                                           RAI ele_to_shift) {
   const auto value = *ele_to_shift;
   if (*end <= value)
     return ;
@@ -226,11 +227,12 @@ void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_right,
 /* Overload of MergeTrivialCases().
  */
 template<class T>
-inline void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_right) {
+inline void MergeTrivialCases(T start_left,  T end_left,
+                              T start_right,T end_right) {
   auto length_left  = std::distance(start_left,  end_left + 1);
   auto length_right = std::distance(start_right, end_right + 1);
-  MergeTrivialCases(start_left, end_left, start_right, end_right, length_left,
-                    length_right);
+  MergeTrivialCases(start_left, end_left, start_right, end_right,
+                    length_left, length_right);
   return ;
 }
 
