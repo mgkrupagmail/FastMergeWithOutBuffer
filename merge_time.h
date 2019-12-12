@@ -30,66 +30,94 @@
  */
 
 /* DESCRIPTION OF TIMING ALGORITHMS.
- * A structure TotalTimes is defined, which keeps track of the execution times of
- *  the various merge algorithms. We now describe details of TotalTimes:
+ * A structure TotalTimes is defined, which keeps track of the execution times
+ *  of the various merge algorithms. We now describe details of TotalTimes:
  *  - Each merge algorithm has a corresponding time member variable (of type
- *    std::chrono::nanoseconds) associated with it (e.g. std::merge() has TotalTimes::std_merge,
- *    MergeWithOutBuffer() has TotalTimes::merge_without_buffer, etc.)
+ *    std::chrono::nanoseconds) associated with it (e.g. std::merge() has
+ *    TotalTimes::std_merge, MergeWithOutBuffer() has
+ *    TotalTimes::merge_without_buffer, etc.)
  *    where each of these times is initialized to 0 nanoseconds.
- *  - For each merge algorithm, there is a corresponding boolean member variable whose name begins
- *    with should_time_ (e.g. TotalTimes::should_time_std_merge, etc.), which if false results
+ *  - For each merge algorithm, there is a corresponding boolean member
+ *    variable whose name begins with should_time_ (e.g.
+ *    TotalTimes::should_time_std_merge, etc.), which if false results
  *    in all things related to that merge algorithm being ignored.
- *  - TotalTimes has static member variables to keep track of statistics. For instance,
+ *  - TotalTimes has static member variables to keep track of statistics.
+ *    For instance,
  *    TotalTimes::largest_ratio_of_merge_without_buffer_over_gnu_merge_without_buffer
- *    keeps track of the largest ratio of merge_without_buffer / gnu_merge_without_buffer.
- *  - TotalTimes::GetStringOfStaticVariables() returns a string describing the static member variables.
- *  - TotalTimes::UpdateStaticVariables() updates (if necessary) the static variables
- *    based on the values stored in the TotalTimes object's member variables.
- *  - TotalTimes::GetAveragesStr() Returns a string describing the TotalTimes object's member variables.
+ *    keeps track of the largest ratio of
+ *    merge_without_buffer / gnu_merge_without_buffer.
+ *  - TotalTimes::GetStringOfStaticVariables() returns a string describing
+ *    the static member variables.
+ *  - TotalTimes::UpdateStaticVariables() updates (if necessary) the static
+ *    variables based on the values stored in the TotalTimes object's member
+ *    variables.
+ *  - TotalTimes::GetAveragesStr() Returns a string describing the TotalTimes
+ *    object's member variables.
  */
 /* Description of TimeMergesOnGivenVecSize():
  *
- * Say that a vector vec of size vec_size is (or consists of) ***two non-decreasing sequences*** if
- *  there is some integer start_right such that
+ * Say that a vector vec of size vec_size is (or consists of)
+ *  ***two non-decreasing sequences*** if there is some integer start_right
+ *   such that
  *   1) 0 < start_right < vec_size,
- *   2) vec[0], ..., vec[start_right - 1] is non-decreasing (this is called the ***left vector***
- *   3) vec[start_right], ..., vec[vec_size - 1] is non-decreasing (this is called the **right vector***
- *  We will not be dealing with the degenerate case where start_right == 0 or start_right == vec_size.
- *  The timing algorithm TimeMergesOnGivenVecSize() is performed on the given value of vec_size
- *   so assume that vec_size is fixed.
+ *   2) vec[0], ..., vec[start_right - 1] is non-decreasing (this is called
+ *      the ***left vector***
+ *   3) vec[start_right], ..., vec[vec_size - 1] is non-decreasing (this is
+ *      called the **right vector***
+ *  We will not be dealing with the degenerate case where start_right == 0 or
+ *  start_right == vec_size. The timing algorithm TimeMergesOnGivenVecSize()
+ *  is performed on the given value of vec_size so assume that vec_size
+ *  is fixed.
  *
  *  1) If start_right == -1 then start_right is replaced by vec_size / 2.
- *  2) If start_right  < -1 then start_right is replaced by a random integer between 1 and vec_size - 1 (inclusive).
- *  3) A vector of size vec_size called vec_original is allocated. A copy of vec_original called vec is allocated.
- *  - Note that the memory locations of vec_original's data will not change throughout the execution of
- *     TimeMergesOnGivenVecSize(). Ditto for vec's data.
+ *  2) If start_right  < -1 then start_right is replaced by a random integer
+ *     between 1 and vec_size - 1 (inclusive).
+ *  3) A vector of size vec_size called vec_original is allocated. A copy
+ *     of vec_original called vec is allocated.
+ *  - Note that the memory locations of vec_original's data will not change
+ *    throughout the execution of TimeMergesOnGivenVecSize().
+ *    Ditto for vec's data.
  *  4) A new TotalTimes object, called total_times, is created.
- *  5) The following is done num_tests_per_vec_size times, where each iteration is called a ***test***:
- *    a) vec_original is filled with random values in such a way that it will consist of two non-decreasing sequences.
+ *  5) The following is done num_tests_per_vec_size times, where each iteration
+ *     is called a ***test***:
+ *    a) vec_original is filled with random values in such a way that it will
+ *       consist of two non-decreasing sequences.
  *       In detail: (I) vec_original is first filled with random data,
- *       (II) the first start_right elements of vec_original are sorted, and finally
- *       (III) the last vec_size - start_right  elements of vec_original are sorted.
- *       Note that vec_original's data will not be changed for the rest of this test.
+ *       (II) the first start_right elements of vec_original are sorted, and
+ *       (III) the last vec_size - start_right elements of vec_original
+ *             are sorted.
+ *       Note that vec_original's data will not be changed for the rest
+ *       of this test.
  *    b) vec_original's data is copied into vec.
- *    c) A call is made to TimeMergesOnGivenVec(), which times the execution of the various merge algorithms (more
- *       details below)
- *       - This function returns a TotalTimes object called times, which is then added to total_times.
- *    d) If pick_new_random_start_right_for_each_new_vec == true then start_right is replaced by a new random value.
- *  6) Information from the total_times object is printed to std::out and the total_times object is returned.
+ *    c) A call is made to TimeMergesOnGivenVec(), which times the execution
+ *       of the various merge algorithms (more details below)
+ *       - This function returns a TotalTimes object called times, which is
+ *         then added to total_times.
+ *    d) If pick_new_random_start_right_for_each_new_vec == true then
+ *       start_right is replaced by a new random value.
+ *  6) Information from the total_times object is printed to std::out
+ *     and the total_times object is returned.
  */
 /* Description of TimeMergesOnGivenVec():
  *
- *  - Inputs: a const reference to vec_original, a reference to vec, and the values start_right and num_repititions_per_vec.
- *  - For each merge function that is to be timed, the following is done num_repititions_per_vec times:
+ *  - Inputs: a const reference to vec_original, a reference to vec, and
+ *            the values start_right and num_repititions_per_vec.
+ *  - For each merge function that is to be timed, the following is
+ *    done num_repititions_per_vec times:
  *    1) A variable std::chrono::nanoseconds total is initialized to 0.
- *    2) At least one untimed call is made to the merge function. After each call, vec's data is restored to its original state.
- *      - This is done so as to load code and data into the cache. Note that this does actually affect timings.
+ *    2) At least one untimed call is made to the merge function. After
+ *       each call, vec's data is restored to its original state.
+ *      - This is done so as to load code and data into the cache.
+ *        Note that this does actually affect timings.
  *    3) num_repititions timed calls to the merge function are executed.
  *      - The time of each call is added to the variable total.
  *      - After each call, vec is restored to its original state.
- *    4) The value of total is returned and execution returns to TimeMergesOnGivenVec().
- *      - The return value is added to the appropriate member variable of total_times.
- *    5) Once all merge functions have been timed, TimeMergesOnGivenVec() returns total_times and execution returns to
+ *    4) The value of total is returned and execution returns to
+ *       TimeMergesOnGivenVec().
+ *      - The return value is added to the appropriate member variable
+ *        of total_times.
+ *    5) Once all merge functions have been timed, TimeMergesOnGivenVec()
+ *       returns total_times and execution returns to
  *       TimeMergesOnGivenVecSize().
  */
 
@@ -113,27 +141,31 @@
 #include "merge_without_buffer_trim3.h"
 #include "merge_without_buffer_trim2.h"
 #include "merge_without_buffer_trim1.h"
-#include "misc_helpers.h"
 
 #define NUMBER_OF_UNTIMED_CALLS_TO_MERGE 2
 
 static const std::chrono::nanoseconds zero_nano{0};
 
 template<class T>
-inline void AssignRightVectorValuesToLeft(std::vector<T> &lhs, const std::vector<T> &rhs) {
+inline void AssignRightVectorValuesToLeft(std::vector<T> &lhs,
+                                          const std::vector<T> &rhs) {
   assert(lhs.size() >= rhs.size());
-  for (auto it_lhs = lhs.begin(), it_rhs = rhs.begin(); it_rhs != rhs.end(); ++it_lhs, ++it_rhs) {
+  for (auto it_lhs = lhs.begin(), it_rhs = rhs.begin();
+            it_rhs != rhs.end(); ++it_lhs, ++it_rhs) {
     *it_lhs = *it_rhs;
   }
   return ;
 }
 
-/* NOTE: All of the following Time...() functions except for TimeStdMergeOnGivenVec()
- *  have near identical code where the only difference is the merge function that is called.
- * Note that TimeStdMergeOnGivenVec() additionally allocates a std::vector<T> temp_vector
- *  of size vec_size since std::merge() requires such a vector as input.
- *  - Since the allocation of temp_vector is a necessary part of std::merge()'s use,
- *    the time it takes to allocate temp_vector is included in the timing of std::merge().
+/* NOTE: All of the following Time...() functions except for
+ *  TimeStdMergeOnGivenVec()have near identical code where the only
+ *  difference is the merge function that is called.
+ * Note that TimeStdMergeOnGivenVec() additionally allocates a
+ *  std::vector<T> temp_vector of size vec_size since std::merge()
+ *  requires such a vector as input.
+ *  - Since the allocation of temp_vector is a necessary part of
+ *    std::merge()'s use, the time it takes to allocate temp_vector
+ *    is included in the timing of std::merge().
  */
 
 template<class T>
@@ -142,7 +174,7 @@ std::chrono::nanoseconds TimeStdInplaceMergeWithOutBufferOnGivenVec(
                     std::size_t start_right, std::size_t num_repititions = 1) {
   std::chrono::nanoseconds total{0};
   for (int counter = 0; counter < NUMBER_OF_UNTIMED_CALLS_TO_MERGE; ++counter)
-  { //Do at least one call to the merge function to load data (including code) in caches.
+  { //Do at least one call to the merge function to load code in caches.
     try {
         std::inplace_merge(vec.begin(), vec.begin() + start_right, vec.end());
     } catch (...) {
@@ -162,7 +194,8 @@ std::chrono::nanoseconds TimeStdInplaceMergeWithOutBufferOnGivenVec(
     total += std::chrono::high_resolution_clock::now() - start_time;
     AssignRightVectorValuesToLeft(vec, vec_original);
   }
-  assert(num_repititions == 0 || total != zero_nano); //Make sure that the loop wasn't optimized away.
+  //Make sure that the loop wasn't optimized away.
+  assert(num_repititions == 0 || total != zero_nano);
   return static_cast<std::chrono::nanoseconds>(total);
 }
 
@@ -173,7 +206,7 @@ std::chrono::nanoseconds TimeStdMergeOnGivenVec(std::vector<T> &vec,
   std::chrono::nanoseconds total{0};
   {
     for (int counter = 0; counter < NUMBER_OF_UNTIMED_CALLS_TO_MERGE; ++counter)
-    { //Do at least one call to the merge function to load data (including code) in caches.
+    { //Do at least one call to the merge function to load code in caches.
       std::vector<T> temp_vec(vec.size(), 0);
       std::merge(vec.begin(), vec.begin() + start_right,
                  vec.begin() + start_right, vec.end(), temp_vec.begin());
@@ -189,7 +222,8 @@ std::chrono::nanoseconds TimeStdMergeOnGivenVec(std::vector<T> &vec,
       total += std::chrono::high_resolution_clock::now() - start_time;
       AssignRightVectorValuesToLeft(vec, vec_original);
     }
-    assert(num_repititions == 0 || total != zero_nano); //Make sure that the loop wasn't optimized away.
+    //Make sure that the loop wasn't optimized away.
+    assert(num_repititions == 0 || total != zero_nano);
   }
   return static_cast<std::chrono::nanoseconds>(total);
 }
@@ -200,19 +234,24 @@ std::chrono::nanoseconds TimeMergeWithOutBufferOnGivenVec(std::vector<T> &vec,
                    std::size_t num_repititions = 1) {
   std::chrono::nanoseconds total{0};
   for (int counter = 0; counter < NUMBER_OF_UNTIMED_CALLS_TO_MERGE; ++counter)
-  { //Do at least one call to the merge function to load data (including code) in caches.
-    MergeWithOutBuffer<typename std::vector<T>::iterator, typename std::vector<T>::iterator>(vec.begin(), vec.begin() + (start_right - 1),
+  { //Do at least one call to the merge function to load code in caches.
+    MergeWithOutBuffer<typename std::vector<T>::iterator,
+                       typename std::vector<T>::iterator>(vec.begin(),
+                       vec.begin() + (start_right - 1),
                        vec.begin() + start_right, vec.end() - 1);
     AssignRightVectorValuesToLeft(vec, vec_original);
   }
   for (std::size_t i = 0; i < num_repititions; i++) {
     auto start_time = std::chrono::high_resolution_clock::now();
-    MergeWithOutBuffer<typename std::vector<T>::iterator, typename std::vector<T>::iterator>(vec.begin(), vec.begin() + (start_right - 1),
+    MergeWithOutBuffer<typename std::vector<T>::iterator,
+                       typename std::vector<T>::iterator>(vec.begin(),
+                       vec.begin() + (start_right - 1),
                        vec.begin() + start_right, vec.end() - 1);
     total += std::chrono::high_resolution_clock::now() - start_time;
     AssignRightVectorValuesToLeft(vec, vec_original);
   }
-  //assert(num_repititions == 0 || total != zero_nano); //Make sure that the loop wasn't optimized away.
+  //Make sure that the loop wasn't optimized away.
+  assert(num_repititions == 0 || total != zero_nano);
   return static_cast<std::chrono::nanoseconds>(total);
 }
 
@@ -223,7 +262,7 @@ std::chrono::nanoseconds TimeStdMergeWithOutBufferOnGivenVec(
   std::chrono::nanoseconds total{0};
   auto comp = [](const T &lhs, const T &rhs) -> bool{return lhs < rhs;};
   for (int counter = 0; counter < NUMBER_OF_UNTIMED_CALLS_TO_MERGE; ++counter)
-  { //Do at least one call to the merge function to load data (including code) in caches.
+  { //Do at least one call to the merge function to load code in caches.
     gnu::gnu__merge_without_buffer(vec.begin(), vec.begin() + start_right,
                         vec.end(), start_right, vec.size() - start_right, comp);
     AssignRightVectorValuesToLeft(vec, vec_original);
@@ -235,7 +274,8 @@ std::chrono::nanoseconds TimeStdMergeWithOutBufferOnGivenVec(
     total += std::chrono::high_resolution_clock::now() - start_time;
     AssignRightVectorValuesToLeft(vec, vec_original);
   }
-  assert(num_repititions == 0 || total != zero_nano); //Make sure that the loop wasn't optimized away.
+  //Make sure that the loop wasn't optimized away.
+  assert(num_repititions == 0 || total != zero_nano);
   return static_cast<std::chrono::nanoseconds>(total);
 }
 
@@ -245,7 +285,7 @@ std::chrono::nanoseconds TimeMergeWithOutBuffer4OnGivenVec(std::vector<T> &vec,
                    std::size_t num_repititions = 1) {
   std::chrono::nanoseconds total{0};
   for (int counter = 0; counter < NUMBER_OF_UNTIMED_CALLS_TO_MERGE; ++counter)
-  { //Do at least one call to the merge function to load data (including code) in caches.
+  { //Do at least one call to the merge function to load code in caches.
     MergeWithOutBufferTrim4(vec.begin(), vec.begin() + (start_right - 1),
                             vec.begin() + start_right, vec.end() - 1);
     AssignRightVectorValuesToLeft(vec, vec_original);
@@ -257,7 +297,8 @@ std::chrono::nanoseconds TimeMergeWithOutBuffer4OnGivenVec(std::vector<T> &vec,
     total += std::chrono::high_resolution_clock::now() - start_time;
     AssignRightVectorValuesToLeft(vec, vec_original);
   }
-  assert(num_repititions == 0 || total != zero_nano); //Make sure that the loop wasn't optimized away.
+  //Make sure that the loop wasn't optimized away.
+  assert(num_repititions == 0 || total != zero_nano);
   return static_cast<std::chrono::nanoseconds>(total);
 }
 
@@ -267,7 +308,7 @@ std::chrono::nanoseconds TimeMergeWithOutBuffer3OnGivenVec(std::vector<T> &vec,
                    std::size_t num_repititions = 1) {
   std::chrono::nanoseconds total{0};
   for (int counter = 0; counter < NUMBER_OF_UNTIMED_CALLS_TO_MERGE; ++counter)
-  { //Do at least one call to the merge function to load data (including code) in caches.
+  { //Do at least one call to the merge function to load code in caches.
     MergeWithOutBufferTrim3(vec.begin(), vec.begin() + (start_right - 1),
                             vec.begin() + start_right, vec.end() - 1);
     AssignRightVectorValuesToLeft(vec, vec_original);
@@ -279,7 +320,8 @@ std::chrono::nanoseconds TimeMergeWithOutBuffer3OnGivenVec(std::vector<T> &vec,
     total += std::chrono::high_resolution_clock::now() - start_time;
     AssignRightVectorValuesToLeft(vec, vec_original);
   }
-  assert(num_repititions == 0 || total != zero_nano); //Make sure that the loop wasn't optimized away.
+  //Make sure that the loop wasn't optimized away.
+  assert(num_repititions == 0 || total != zero_nano);
   return static_cast<std::chrono::nanoseconds>(total);
 }
 
@@ -289,7 +331,7 @@ std::chrono::nanoseconds TimeMergeWithOutBuffer2OnGivenVec(std::vector<T> &vec,
                    std::size_t num_repititions = 1) {
   std::chrono::nanoseconds total{0};
   for (int counter = 0; counter < NUMBER_OF_UNTIMED_CALLS_TO_MERGE; ++counter)
-  { //Do at least one call to the merge function to load data (including code) in caches.
+  { //Do at least one call to the merge function to load code in caches.
     MergeWithOutBufferTrim2(vec.begin(), vec.begin() + (start_right - 1),
                             vec.begin() + start_right, vec.end() - 1);
     AssignRightVectorValuesToLeft(vec, vec_original);
@@ -301,7 +343,8 @@ std::chrono::nanoseconds TimeMergeWithOutBuffer2OnGivenVec(std::vector<T> &vec,
     total += std::chrono::high_resolution_clock::now() - start_time;
     AssignRightVectorValuesToLeft(vec, vec_original);
   }
-  assert(num_repititions == 0 || total != zero_nano); //Make sure that the loop wasn't optimized away.
+  //Make sure that the loop wasn't optimized away.
+  assert(num_repititions == 0 || total != zero_nano);
   return static_cast<std::chrono::nanoseconds>(total);
 }
 
@@ -311,9 +354,9 @@ std::chrono::nanoseconds TimeMergeWithOutBuffer1OnGivenVec(std::vector<T> &vec,
                   std::size_t num_repititions = 1) {
   std::chrono::nanoseconds total{0};
   for (int counter = 0; counter < NUMBER_OF_UNTIMED_CALLS_TO_MERGE; ++counter)
-  { //Do at least one call to the merge function to load data (including code) in caches.
+  { //Do at least one call to the merge function to load code in caches.
     MergeWithOutBufferTrim1(vec.begin(), vec.begin() + (start_right - 1),
-                                           vec.begin() + start_right, vec.end() - 1);
+                            vec.begin() + start_right, vec.end() - 1);
     AssignRightVectorValuesToLeft(vec, vec_original);
   }
   for (std::size_t i = 0; i < num_repititions; i++) {
@@ -323,7 +366,8 @@ std::chrono::nanoseconds TimeMergeWithOutBuffer1OnGivenVec(std::vector<T> &vec,
     total += std::chrono::high_resolution_clock::now() - start_time;
     AssignRightVectorValuesToLeft(vec, vec_original);
   }
-  assert(num_repititions == 0 || total != zero_nano); //Make sure that the loop wasn't optimized away.
+  //Make sure that the loop wasn't optimized away.
+  assert(num_repititions == 0 || total != zero_nano);
   return static_cast<std::chrono::nanoseconds>(total);
 }
 
@@ -365,7 +409,8 @@ struct TotalTimes {
     merge_without_buffer2     += rhs.merge_without_buffer2;
     merge_without_buffer1     += rhs.merge_without_buffer1;
     gnu_merge_without_buffer  += rhs.gnu_merge_without_buffer;
-    total_number_of_times_each_merge_function_was_called += rhs.total_number_of_times_each_merge_function_was_called;
+    total_number_of_times_each_merge_function_was_called +=
+          rhs.total_number_of_times_each_merge_function_was_called;
     return *this;
   }
   template<class T> static std::size_t GetStringWidth(T value) {
@@ -392,7 +437,8 @@ struct TotalTimes {
     return strm.str();
   }
   //Generate a string listing the average time to perform each merge function.
-  // divisor is the total number of times that each individual merge function was called.
+  // divisor is the total number of times that each individual merge function
+  // was called.
   std::string GetAveragesStr(std::size_t divisor) {
     if (divisor == 0)
       divisor = total_number_of_times_each_merge_function_was_called;
@@ -444,12 +490,15 @@ struct TotalTimes {
       //Don't need to include division by divisor since it would just cancel out.
       auto merge_without_buffer_count = merge_without_buffer.count();
       auto gnu_merge_without_buffer_count = gnu_merge_without_buffer.count();
-      long double gnu_merge_without_buffer_long_double = static_cast<long double>(gnu_merge_without_buffer_count);
+      long double gnu_merge_without_buffer_long_double
+                 = static_cast<long double>(gnu_merge_without_buffer_count);
       if (gnu_merge_without_buffer_long_double > 0.0l) {
-        long double ratio = merge_without_buffer_count / gnu_merge_without_buffer_long_double;
+        long double ratio = merge_without_buffer_count
+                            / gnu_merge_without_buffer_long_double;
         if (ratio < smallest_ratio_of_merge_without_buffer_over_gnu_merge_without_buffer) {
           if (verbose) {
-            std::cout << "New smallest ratio of merge_without_buffer / gnu_merge_without_buffer = " << ratio
+            std::cout << "New smallest ratio of merge_without_buffer / gnu_merge_without_buffer = "
+                      << ratio
                       << " occurred when vec_size = " << vec_size << "\n";
           }
           smallest_ratio_of_merge_without_buffer_over_gnu_merge_without_buffer = ratio;
@@ -457,7 +506,8 @@ struct TotalTimes {
         }
         if (ratio > largest_ratio_of_merge_without_buffer_over_gnu_merge_without_buffer) {
           if (verbose) {
-            std::cout << "New largest ratio of merge_without_buffer / gnu_merge_without_buffer = " << ratio
+            std::cout << "New largest ratio of merge_without_buffer / gnu_merge_without_buffer = "
+                      << ratio
                       << " occurred when vec_size = " << vec_size << "\n";
           }
           largest_ratio_of_merge_without_buffer_over_gnu_merge_without_buffer = ratio;
@@ -628,14 +678,16 @@ template<class T> TotalTimes TimeMergesOnGivenVecSize(std::size_t vec_size,
   try {
     vec_original = std::vector<T>(vec_size);
   } catch (...) {
-    std::cout << "Unable to allocate vector vec_original of size " << vec_size << std::endl;
+    std::cout << "Unable to allocate vector vec_original of size "
+              << vec_size << std::endl;
     return total_times;
   }
 
   try {
     vec = vec_original;
   } catch (...) {
-    std::cout << "Unable to create a copy of vector vec_original of size " << vec_size << std::endl;
+    std::cout << "Unable to create a copy of vector vec_original of size "
+              << vec_size << std::endl;
     return total_times;
   }
 
@@ -687,7 +739,8 @@ template<class T> TotalTimes TimeMergesOnGivenVecSize(std::size_t vec_size,
   total_times.UpdateStaticVariables(vec_size);
   if (print_total_averages) {
     PrintLine("_");
-    std::cout << "Times for merging " << num_tests_per_vec_size << " vectors of combined size " << vec_size << ". ";
+    std::cout << "Times for merging " << num_tests_per_vec_size
+              << " vectors of combined size " << vec_size << ". ";
     std::cout << "The sizes of the two component vectors ";
     if (pick_new_random_start_right_for_each_new_vec && num_tests_per_vec_size > 1) {
       std::cout << "DID";
@@ -695,9 +748,13 @@ template<class T> TotalTimes TimeMergesOnGivenVecSize(std::size_t vec_size,
       std::cout << "did NOT";
     }
     std::cout << " vary between different values of vec_original.\n";
-    std::cout << "Each merge algorithm was called " << num_repititions_per_vec << " times for each value of vec_original, so \n";
-    std::cout << "each merge algorithm was called a total " << (num_repititions_per_vec * num_tests_per_vec_size) << " times.\n";
-    std::cout << total_times.GetAveragesStr(num_repititions_per_vec * num_tests_per_vec_size);
+    std::cout << "Each merge algorithm was called " << num_repititions_per_vec
+              << " times for each value of vec_original, so \n";
+    std::cout << "each merge algorithm was called a total "
+              << (num_repititions_per_vec * num_tests_per_vec_size)
+              << " times.\n";
+    std::cout << total_times.GetAveragesStr(num_repititions_per_vec
+                                            * num_tests_per_vec_size);
     PrintLine("_");
     PrintLine("_");
     std::cout << TotalTimes::GetStringOfStaticVariables();
@@ -720,7 +777,8 @@ inline T ForceValueToBeWithinBounds(T value, T minimum_value, T maximum_value) {
 
 #define MINIMUM_vec_size static_cast<std::size_t>(1u << 1)
 #define MAXIMUM_vec_size static_cast<std::size_t>(1u << 23)
-auto default_next_vec_size_lambda = [](std::size_t cur_vec_size, const long double vec_size_scale = 1.4l) -> std::size_t {
+auto default_next_vec_size_lambda = [](std::size_t cur_vec_size,
+           const long double vec_size_scale = 1.4l) -> std::size_t {
   long double v_ld = static_cast<long double>(cur_vec_size) * vec_size_scale;
   if (v_ld >= static_cast<long double>(MAXIMUM_vec_size))
     return MAXIMUM_vec_size;
@@ -735,7 +793,8 @@ auto default_num_tests_per_vec_size_lambda = [](std::size_t cur_vec_size) -> std
   if (cur_vec_size + 1 >= MAXIMUM_num_tests_per_vec_size)
     return 1;
   std::size_t v = (MAXIMUM_num_tests_per_vec_size / (cur_vec_size + 1)) + 1;
-  v = ForceValueToBeWithinBounds<std::size_t>(v, MINIMUM_num_tests_per_vec_size, MAXIMUM_num_tests_per_vec_size);
+  v = ForceValueToBeWithinBounds<std::size_t>(v,
+                 MINIMUM_num_tests_per_vec_size, MAXIMUM_num_tests_per_vec_size);
   return v;
 };
 
@@ -743,7 +802,8 @@ auto default_num_tests_per_vec_size_lambda = [](std::size_t cur_vec_size) -> std
 #define MAXIMUM_num_repititions_per_vec static_cast<std::size_t>(1u << 8)
 auto default_num_repititions_per_vec_lambda = [](std::size_t cur_vec_size) -> std::size_t {
   std::size_t v = (MAXIMUM_vec_size / (cur_vec_size + 1)) + 1;
-  v = ForceValueToBeWithinBounds<std::size_t>(v, MINIMUM_num_repititions_per_vec, MAXIMUM_num_repititions_per_vec);
+  v = ForceValueToBeWithinBounds<std::size_t>(v,
+                   MINIMUM_num_repititions_per_vec, MAXIMUM_num_repititions_per_vec);
   return v;
 };
 
@@ -768,67 +828,94 @@ auto default_num_repititions_per_vec_lambda = [](std::size_t cur_vec_size) -> st
   bool print_vec_original = false;
   long double const_to_scale_vec_size_by = 1.2l;
   ValueType value_lower_bound = 0;
-  auto total_times = TimeMergeFunctions<ValueType>(vec_size_start, start_right, pick_new_random_start_right_for_each_new_vec,
-                    next_vec_size_lambda, num_tests_per_vec_size_lambda, num_repititions_per_vec_lambda,
-                    print_vec_averages, print_total_averages, verbose, print_vec_original,
+  auto total_times = TimeMergeFunctions<ValueType>(vec_size_start,
+                    start_right, pick_new_random_start_right_for_each_new_vec,
+                    next_vec_size_lambda, num_tests_per_vec_size_lambda,
+                    num_repititions_per_vec_lambda,
+                    print_vec_averages, print_total_averages, verbose,
+                    print_vec_original,
                     const_to_scale_vec_size_by, value_lower_bound);
 */
-/* This function will do the following until the values that vec_size takes on cease to strictly increase.
+/* This function will do the following until the values that vec_size
+ *  takes on cease to strictly increase.
  *  1) It will initialize vec_size to vec_size_start.
- *  2) It will use num_tests_per_vec_size_lambda  to generate a value num_tests_per_vec_size.
- *  3) It will use num_repititions_per_vec_lambda to generate a value num_repititions_per_vec.
- *  4) It will eventually call TimeMergesOnGivenVecSize() where the random values of the vectors will
- *     be taken from the range [range_lower_bound, range_upper_bound], which TimeMergeFunctions() defines.
- *     - In particular, if const_to_scale_vec_size_by > 0.0l then range_lower_bound will be set to 0
- *       and range_upper_bound will be set to const_to_scale_vec_size_by * vec_size.
- *  5) It will call TimeMergesOnGivenVecSize() with the obvious input and add the TotalTimes object it returns to total_times.
- *  6) It will call next_vec_size_lambda() to get the value of vec_size for the next iteration of the loop (or it may leave the loop).
+ *  2) It will use num_tests_per_vec_size_lambda  to generate a
+ *     value num_tests_per_vec_size.
+ *  3) It will use num_repititions_per_vec_lambda to generate a
+ *     value num_repititions_per_vec.
+ *  4) It will eventually call TimeMergesOnGivenVecSize() where
+ *     the random values of the vectors will be taken from the range
+ *     [range_lower_bound, range_upper_bound], which TimeMergeFunctions()
+ *     defines.
+ *     - In particular, if const_to_scale_vec_size_by > 0.0l then
+ *       range_lower_bound will be set to 0 and range_upper_bound will be
+ *       set to const_to_scale_vec_size_by * vec_size.
+ *  5) It will call TimeMergesOnGivenVecSize() with the obvious
+ *     input and add the TotalTimes object it returns to total_times.
+ *  6) It will call next_vec_size_lambda() to get the value of vec_size
+ *     for the next iteration of the loop (or it may leave the loop).
  * It will terminate by returning total_times.
  */
 template<class T>
 TotalTimes TimeMergeFunctions(
-                  std::size_t vec_size_start = 2,
-                  int start_right = -1, //set to -1 for the midpoint, and set
-                                        //it to be < -1 to pick the first length of the left vector randomly.
-                  bool pick_new_random_start_right_for_each_new_vec = false,
-                  decltype(default_next_vec_size_lambda) next_vec_size_lambda = default_next_vec_size_lambda,
-                  decltype(default_num_tests_per_vec_size_lambda) num_tests_per_vec_size_lambda = default_num_tests_per_vec_size_lambda,
-                  decltype(default_num_repititions_per_vec_lambda) num_repititions_per_vec_lambda = default_num_repititions_per_vec_lambda,
-                  bool print_vec_averages = false,
-                  bool print_total_averages = true,
-                  bool verbose = false,
-                  bool print_vec_original = false,
-                  long double const_to_scale_vec_size_by = 1.2l, //If <= 0 then value_upper_bound is not replaced by const_to_scale_vec_size_by * vec_size
-                  T value_lower_bound = std::numeric_limits<T>::min(),
-                  T value_upper_bound = std::numeric_limits<T>::max()
-                  ) {
+      std::size_t vec_size_start = 2,
+      int start_right = -1, //set to -1 for the midpoint, and set
+                            //it to be < -1 to pick the first length of the left vector randomly.
+      bool pick_new_random_start_right_for_each_new_vec = false,
+      decltype(default_next_vec_size_lambda) next_vec_size_lambda
+                                           = default_next_vec_size_lambda,
+      decltype(default_num_tests_per_vec_size_lambda) num_tests_per_vec_size_lambda
+                                           = default_num_tests_per_vec_size_lambda,
+      decltype(default_num_repititions_per_vec_lambda) num_repititions_per_vec_lambda
+                                           = default_num_repititions_per_vec_lambda,
+      bool print_vec_averages = false,
+      bool print_total_averages = true,
+      bool verbose = false,
+      bool print_vec_original = false,
+      long double const_to_scale_vec_size_by = 1.2l, //If <= 0 then
+                      // value_upper_bound is not replaced by
+                      // const_to_scale_vec_size_by * vec_size
+      T value_lower_bound = std::numeric_limits<T>::min(),
+      T value_upper_bound = std::numeric_limits<T>::max()
+      ) {
   TotalTimes total_times;
   std::size_t vec_size = vec_size_start;
-  vec_size = ForceValueToBeWithinBounds<std::size_t>(vec_size, MINIMUM_vec_size, MAXIMUM_vec_size);
+  vec_size = ForceValueToBeWithinBounds<std::size_t>(vec_size,
+                                 MINIMUM_vec_size, MAXIMUM_vec_size);
   while (vec_size <= MAXIMUM_vec_size) {
     std::size_t num_tests_per_vec_size = num_tests_per_vec_size_lambda(vec_size);
     std::size_t num_repititions_per_vec = num_repititions_per_vec_lambda(vec_size);
     std::cout << "vec_size = " << vec_size << '\n';
     std::cout << "num_tests_per_vec_size = " << num_tests_per_vec_size;
-    std::cout << " \tnum_repititions_per_vec = \t" << num_repititions_per_vec << '\n';
+    std::cout << " \tnum_repititions_per_vec = \t"
+              << num_repititions_per_vec << '\n';
     std::cout.flush();
     T range_lower_bound = value_lower_bound;
     T range_upper_bound = value_upper_bound;
-    if (const_to_scale_vec_size_by > 0.0l) { //Then replace range_upper_bound by const_to_scale_vec_size_by * vec_size and replace range_lower_bound by 0.
+    if (const_to_scale_vec_size_by > 0.0l) { //Then replace range_upper_bound
+                                 // by const_to_scale_vec_size_by * vec_size and
+                                 // replace range_lower_bound by 0.
       range_lower_bound = 0;
       //Check if const_to_scale_vec_size_by * vec_size will overflow
-      if (!(static_cast<long double>(std::numeric_limits<T>::max()) / static_cast<long double>(vec_size) < const_to_scale_vec_size_by)) {
-        long double new_range_upper_bound_ld = const_to_scale_vec_size_by * static_cast<long double>(vec_size); //No overflow.
-        if (new_range_upper_bound_ld <= static_cast<long double>(std::numeric_limits<T>::max()))
+      if (!(static_cast<long double>(std::numeric_limits<T>::max())
+                      / static_cast<long double>(vec_size)
+                      < const_to_scale_vec_size_by)) {
+        long double new_range_upper_bound_ld =
+                 const_to_scale_vec_size_by
+                 * static_cast<long double>(vec_size); //No overflow.
+        if (new_range_upper_bound_ld <=
+             static_cast<long double>(std::numeric_limits<T>::max()))
           range_upper_bound = static_cast<T>(new_range_upper_bound_ld);
       }
     }
     if (range_upper_bound > MAXIMUM_value_upper_bound)
       range_upper_bound = MAXIMUM_value_upper_bound;
-    TotalTimes times = TimeMergesOnGivenVecSize<T>(vec_size, num_tests_per_vec_size, num_repititions_per_vec,
-                       start_right, pick_new_random_start_right_for_each_new_vec,
-                       print_vec_averages, print_total_averages, verbose, print_vec_original,
-                       range_lower_bound, range_upper_bound);
+    TotalTimes times = TimeMergesOnGivenVecSize<T>(vec_size,
+                   num_tests_per_vec_size, num_repititions_per_vec,
+                   start_right, pick_new_random_start_right_for_each_new_vec,
+                   print_vec_averages, print_total_averages,
+                   verbose, print_vec_original,
+                   range_lower_bound, range_upper_bound);
     std::cout << '\n';
     std::cout.flush();
     total_times += times;
@@ -848,7 +935,8 @@ TotalTimes TimeMergeFunctions(
   std::size_t vec_size_upper_bound = (1u << 23);
   std::size_t number_of_random_vec_sizes = (1u << 20);
 
-  int start_right = -2; //For the first vector, pick the lengths of the left and right vectors randomly.
+  int start_right = -2; //For the first vector, pick the lengths
+                        // of the left and right vectors randomly.
   bool pick_new_random_start_right_for_each_new_vec = true;
   auto num_tests_per_vec_size_lambda = default_num_tests_per_vec_size_lambda;
   auto num_repititions_per_vec_lambda = default_num_repititions_per_vec_lambda;
@@ -859,18 +947,23 @@ TotalTimes TimeMergeFunctions(
   bool print_vec_original = false;
   long double const_to_scale_vec_size_by = 1.2l;
   ValueType value_lower_bound = 0;
-  auto total_times = TimeMergeFunctionsOnRandomVecSizes<ValueType>(vec_size_lower_bound, vec_size_upper_bound,
-                    number_of_random_vec_sizes,
-                    start_right, pick_new_random_start_right_for_each_new_vec,
-                    num_tests_per_vec_size_lambda, num_repititions_per_vec_lambda,
-                    print_vec_averages, print_total_averages, verbose, print_vec_original,
-                    const_to_scale_vec_size_by, value_lower_bound);
+  auto total_times = TimeMergeFunctionsOnRandomVecSizes<ValueType>(
+          vec_size_lower_bound, vec_size_upper_bound,
+          number_of_random_vec_sizes,
+          start_right, pick_new_random_start_right_for_each_new_vec,
+          num_tests_per_vec_size_lambda, num_repititions_per_vec_lambda,
+          print_vec_averages, print_total_averages, verbose, print_vec_original,
+          const_to_scale_vec_size_by, value_lower_bound);
 */
 /* This function will do the following number_of_random_vec_sizes times:
- *  1) It will pick a random value of vec_size in [vec_size_lower_bound, vec_size_upper_bound]
- *  2) It will use num_tests_per_vec_size_lambda  to generate a value num_tests_per_vec_size.
- *  3) It will use num_repititions_per_vec_lambda to generate a value num_repititions_per_vec.
- *  4) It will call TimeMergesOnGivenVecSize() with the obvious input and add the TotalTimes object it returns to total_times.
+ *  1) It will pick a random value of vec_size in
+ *     [vec_size_lower_bound, vec_size_upper_bound]
+ *  2) It will use num_tests_per_vec_size_lambda  to generate a value
+ *     num_tests_per_vec_size.
+ *  3) It will use num_repititions_per_vec_lambda to generate a value
+ *     num_repititions_per_vec.
+ *  4) It will call TimeMergesOnGivenVecSize() with the obvious input
+ *      and add the TotalTimes object it returns to total_times.
  * It will terminate by returning total_times.
  */
 template<class T>
@@ -879,34 +972,45 @@ TotalTimes TimeMergeFunctionsOnRandomVecSizes(
                   std::size_t vec_size_upper_bound = MAXIMUM_vec_size,
                   std::size_t number_of_random_vec_sizes = (1u << 16),
                   const int start_right = -1, //set to -1 for the midpoint, and set
-                                              //it to be < -1 to pick the first length of the left vector randomly.
+                                              //it to be < -1 to pick the first
+                                              // length of the left vector randomly.
                   bool pick_new_random_start_right_for_each_new_vec = true,
-                  decltype(default_num_tests_per_vec_size_lambda) num_tests_per_vec_size_lambda = default_num_tests_per_vec_size_lambda,
-                  decltype(default_num_repititions_per_vec_lambda) num_repititions_per_vec_lambda = default_num_repititions_per_vec_lambda,
+                  decltype(default_num_tests_per_vec_size_lambda) num_tests_per_vec_size_lambda
+                                           = default_num_tests_per_vec_size_lambda,
+                  decltype(default_num_repititions_per_vec_lambda) num_repititions_per_vec_lambda
+                                           = default_num_repititions_per_vec_lambda,
                   bool print_vec_averages = false,
                   bool print_total_averages = true,
                   bool verbose = false,
                   bool print_vec_original = false,
-                  long double const_to_scale_vec_size_by = 1.2l, //If <= 0 then value_upper_bound is not replaced by const_to_scale_vec_size_by * vec_size
+                  long double const_to_scale_vec_size_by = 1.2l, //If <= 0 then
+                                 // value_upper_bound is not replaced
+                                 // by const_to_scale_vec_size_by * vec_size
                   T value_lower_bound = std::numeric_limits<T>::min(),
                   T value_upper_bound = std::numeric_limits<T>::max()
                   ) {
   TotalTimes total_times;
   if (vec_size_upper_bound > MAXIMUM_vec_size) {
-    std::cout << "Reduced vec_size_upper_bound from " << vec_size_upper_bound << " to " << MAXIMUM_vec_size << std::endl;
+    std::cout << "Reduced vec_size_upper_bound from "
+              << vec_size_upper_bound << " to " << MAXIMUM_vec_size
+              << std::endl;
     vec_size_upper_bound = MAXIMUM_vec_size;
   }
   if (vec_size_lower_bound < MINIMUM_vec_size) {
-    std::cout << "Increased vec_size_lower_bound from " << vec_size_lower_bound << " to " << MINIMUM_vec_size << std::endl;
+    std::cout << "Increased vec_size_lower_bound from "
+              << vec_size_lower_bound << " to " << MINIMUM_vec_size
+              << std::endl;
     vec_size_lower_bound = MINIMUM_vec_size;
   }
   std::size_t vec_size;
   std::random_device rnd_device;
   std::mt19937 generator(rnd_device());
-  std::uniform_int_distribution<int> vec_size_dist(vec_size_lower_bound, vec_size_upper_bound);
+  std::uniform_int_distribution<int> vec_size_dist(vec_size_lower_bound,
+                                                   vec_size_upper_bound);
   for (std::size_t counter = 0; counter < number_of_random_vec_sizes; ++counter) {
     vec_size = vec_size_dist(generator);
-    vec_size = ForceValueToBeWithinBounds<std::size_t>(vec_size, MINIMUM_vec_size, MAXIMUM_vec_size);
+    vec_size = ForceValueToBeWithinBounds<std::size_t>(vec_size,
+                                    MINIMUM_vec_size, MAXIMUM_vec_size);
     auto new_start_right = start_right;
     if (start_right == -1 || start_right >= vec_size) {
       new_start_right = vec_size / 2;
@@ -916,11 +1020,15 @@ TotalTimes TimeMergeFunctionsOnRandomVecSizes(
     }
     T range_lower_bound = value_lower_bound;
     T range_upper_bound = value_upper_bound;
-    if (const_to_scale_vec_size_by > 0.0l) { //Then replace range_upper_bound by const_to_scale_vec_size_by * vec_size and replace range_lower_bound by 0.
+    if (const_to_scale_vec_size_by > 0.0l) { //Then replace range_upper_bound
+                                          // by const_to_scale_vec_size_by * vec_size
+                                          // and replace range_lower_bound by 0.
       range_lower_bound = 0;
       //Check if const_to_scale_vec_size_by * vec_size will overflow
-      if (!(static_cast<long double>(std::numeric_limits<T>::max()) / static_cast<long double>(vec_size) < const_to_scale_vec_size_by)) {
-        long double new_range_upper_bound_ld = const_to_scale_vec_size_by * static_cast<long double>(vec_size); //No overflow.
+      if (!(static_cast<long double>(std::numeric_limits<T>::max())
+           / static_cast<long double>(vec_size) < const_to_scale_vec_size_by)) {
+        long double new_range_upper_bound_ld = const_to_scale_vec_size_by
+                                     * static_cast<long double>(vec_size); //No overflow.
         if (new_range_upper_bound_ld <= static_cast<long double>(std::numeric_limits<T>::max()))
           range_upper_bound = static_cast<T>(new_range_upper_bound_ld);
       }
@@ -933,10 +1041,12 @@ TotalTimes TimeMergeFunctionsOnRandomVecSizes(
     std::cout << "num_tests_per_vec_size = " << num_tests_per_vec_size;
     std::cout << " \tnum_repititions_per_vec = \t" << num_repititions_per_vec << '\n';
     std::cout.flush();
-    TotalTimes times = TimeMergesOnGivenVecSize<T>(vec_size, num_tests_per_vec_size, num_repititions_per_vec,
-                      new_start_right, pick_new_random_start_right_for_each_new_vec,
-                      print_vec_averages, print_total_averages, verbose, print_vec_original,
-                      range_lower_bound, range_upper_bound);
+    TotalTimes times = TimeMergesOnGivenVecSize<T>(vec_size, num_tests_per_vec_size,
+        num_repititions_per_vec, new_start_right,
+        pick_new_random_start_right_for_each_new_vec,
+        print_vec_averages, print_total_averages,
+        verbose, print_vec_original,
+        range_lower_bound, range_upper_bound);
     std::cout << '\n';
     std::cout.flush();
     total_times += times;
