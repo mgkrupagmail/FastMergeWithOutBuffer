@@ -13,17 +13,9 @@
  *                 to the maximum extent allowed by law. :)
  *  Description : The primary algorithm of interest here would be
  *                MergeWithOutBuffer()
- *                (1) A selection algorithm QuickMidSelect() that for large
- *                    vectors of primitive types, is faster than the g++
- *                    libstdc++'s std::nth_element() about half the time.
  *  In general, the larger the size of the vector, the bigger the difference in
- *   speed between my algorithms and the corresponding std:: algorithms. The same
- *   is true for vectors that take on a larger range of values. However, sometimes
- *   an algorithm (referring to all algorithms here, not just my own) gets
- *   lucky by say, selecting the right pivot or having a distribution of data
- *   that is somehow amiable for that algorithm. So there can be some variability
- *   if differences in speed.
- * ============================================================================
+ *   speed between my algorithms and the corresponding std:: algorithms.
+ *============================================================================
  */
 
 #include <cassert>
