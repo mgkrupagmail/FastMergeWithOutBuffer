@@ -22,7 +22,8 @@
  *  [start2, end2] are each non-decreasing.
  *
  * This function will rearrange all elements so that
- *  *start1 <= *(start1 + 1) <= ... <= *end1 <= *start2 <= *(start2 + 1) <= ... <= *end2
+ *  *start1 <= *(start1 + 1) <= ... <= *end1 <= *start2 <= *(start2 + 1) <= ...
+ *   <= *end2
  * (Note that start1 == end1 is allowed so that *(start1 + 1) need not
  *   actually be defined. Similarily start2 == end2 is allowed.)
  *
@@ -36,7 +37,7 @@
 
 #include <algorithm>
 
-namespace MergeWithoutBufferNamespace {
+namespace {
 
 /* Finds the SMALLEST integer  0 <= d < length IF it exists such that
  *  (*) *(end_left - d) <= *(start_right + d), and
@@ -55,7 +56,7 @@ namespace MergeWithoutBufferNamespace {
  */
 template<class RAI>
 int DisplacementFromMiddleIteratorToPotentialMedians_KnownToExist(
-                         const RAI end_left,const RAI start_right, int length) {
+                        const RAI end_left,const RAI start_right, int length) {
   (void)length--;  //We will now use length_left as if it were d_upper.
   int d_lower = 0; //So that end_left - d_lower = end_left
   do {
@@ -84,9 +85,10 @@ int DisplacementFromMiddleIteratorToPotentialMedians_KnownToExist(
  * This is a helper function for MergeTrivialCases().
  */
 template<class RAI>
-inline void RotateLeftByExactlyOneElement(RAI start, RAI end, RAI ele_to_shift) {
+inline void RotateLeftByExactlyOneElement(RAI start, RAI end,
+                                          RAI ele_to_shift) {
   const auto value = *ele_to_shift;
-  if (*start >= value)
+  if (value <= *start)
     return ;
   else
     std::iter_swap(start, ele_to_shift);
@@ -109,13 +111,14 @@ inline void RotateLeftByExactlyOneElement(RAI start, RAI end, RAI ele_to_shift) 
  * This is a helper function for MergeTrivialCases().
  */
 template<class RAI>
-inline void RotateRightByExactlyOneElement(RAI start, RAI end, RAI ele_to_shift) {
+inline void RotateRightByExactlyOneElement(RAI start, RAI end,
+                                           RAI ele_to_shift) {
   const auto value = *ele_to_shift;
   if (*end <= value)
     return ;
   else
     std::iter_swap(end, ele_to_shift);
-  for (auto it = end - 1; it > start && *it > value; (void)it--)
+  for (auto it = end - 1; it > start && value < *it; (void)it--)
     std::iter_swap(it, it + 1);
 }
 
@@ -129,7 +132,7 @@ inline void RotateRightByExactlyOneElement(RAI start, RAI end, RAI ele_to_shift)
  */
 template<class RAI>
 inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
-                                         RAI start_right, RAI end_right) {
+                                               RAI start_right, RAI end_right) {
   auto end_left_plus1  = end_left + 1;
   auto end_right_plus1 = end_right + 1;
   auto length_left  = std::distance(start_left, end_left_plus1);
@@ -159,34 +162,38 @@ inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
 /* This is a helper function that merges two ranges when the merge is trivial,
  *  by which it is meant that length_left <= 1 or length_right <= 1.
  */
-template<class T>
-void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_right,
+template<class Iterator>
+void MergeTrivialCases(Iterator start_left,  Iterator end_left,
+                       Iterator start_right, Iterator end_right,
                        long length_left, long length_right) {
   if (length_left <= 0 || length_right <= 0 || *end_left <= *start_right)
     return ;
-  else if (*start_left >= *end_right) {
+  else if (*end_right <= *start_left) {
     ///Note that this function has the same effect as
     // std::rotate(vec.begin() + start_left, vec.begin() + start_right,
     //             vec.begin() + (end_right + 1));
     // except that it works for ranges iterated by distinct objects.
-    MergeWithoutBufferNamespace::ShiftRightSideToTheRightByItsLength(start_left, end_left, start_right,
-                                                            end_right);
+    ShiftRightSideToTheRightByItsLength(start_left,
+                                              end_left, start_right, end_right);
   } else if (end_left == start_left) {
-    MergeWithoutBufferNamespace::RotateLeftByExactlyOneElement(start_right, end_right, end_left);
+    RotateLeftByExactlyOneElement(start_right,
+                                                           end_right, end_left);
   } else {// if (start_right == end_right) {
-    MergeWithoutBufferNamespace::RotateRightByExactlyOneElement(start_left, end_left, start_right);
+    RotateRightByExactlyOneElement(start_left,
+                                                         end_left, start_right);
   }
   return ;
 }
 
 /* Overload of MergeTrivialCases().
  */
-template<class T>
-inline void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_right) {
+template<class Iterator>
+inline void MergeTrivialCases(Iterator start_left,  Iterator end_left,
+                              Iterator start_right, Iterator end_right) {
   auto length_left  = std::distance(start_left,  end_left + 1);
   auto length_right = std::distance(start_right, end_right + 1);
-  MergeWithoutBufferNamespace::MergeTrivialCases(start_left, end_left, start_right, end_right, length_left,
-                                        length_right);
+  MergeTrivialCases<Iterator>(start_left, end_left,
+                             start_right, end_right, length_left, length_right);
   return ;
 }
 
@@ -213,7 +220,7 @@ inline RAI LargestIteratorWithValueLessThan_KnownToExist(RAI start_it,
 
     //The below three lines are optional. They are performed at most
     // std::distance(start_it, d) + 1 times.
-    if (*(start_it + 1) >= value) {
+    if (value <= *(start_it + 1)) {
       return start_it;
     }
     (void)start_it++;
@@ -238,7 +245,7 @@ ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(
   while (true) {
     //The below lines are optional. They are performed at most
     // std::distance(start_it, d) + 1 times.
-    if (*start_it > value)
+    if (value < *start_it)
       return start_it;
     (void)start_it++;
 
@@ -304,12 +311,12 @@ ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(
  */
 template<class RAI, class RAI2>
 void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
-               RAI2 &start_right_out, RAI2 &end_right_out) {
+              RAI2 &start_right_out, RAI2 &end_right_out) {
   auto start_left  = start_left_out,  end_left  = end_left_out;
   auto start_right = start_right_out, end_right = end_right_out;
   bool is_trivial = false;
   while (true) {
-    if (*end_left <= *start_right || start_left >= start_right) {
+    if (*end_left <= *start_right || start_right <= start_left) {
       start_left_out   = end_left + 1;
       end_left_out     = end_left;
       start_right_out  = end_right + 1;
@@ -319,13 +326,13 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
 
     //If true, then this implies that start_left < end_left
     if (*start_left <= *start_right)
-      start_left = MergeWithoutBufferNamespace::SmallestIteratorWithValueGreaterThan_KnownToExist(
+      start_left = SmallestIteratorWithValueGreaterThan_KnownToExist(
                                        start_left + 1, end_left, *start_right);
-    if (*end_right >= *end_left)
-      end_right = MergeWithoutBufferNamespace::LargestIteratorWithValueLessThan_KnownToExist(start_right,
+    if (*end_left <= *end_right)
+      end_right = LargestIteratorWithValueLessThan_KnownToExist(start_right,
                                                      end_right - 1, *end_left);
-    if (*start_left >= *end_right || start_left >= end_left
-        || start_right >= end_right) {
+    if (*end_right <= *start_left || end_left <= start_left
+        || end_right <= start_right) {
       is_trivial = true;
       break;
     }
@@ -351,21 +358,21 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
                            //since *end_left > *end_right >= *(start_right + 1).
       //At this point, *start_left > *start_right since
       // *start_left > *(start_right + 1) >= *start_right.
-      if (start_left >= end_left || *start_left >= *end_right) {
+      if (end_left <= start_left || *end_right <= *start_left) {
         is_trivial = true;
         break;
       }
-      //At this point, *start_left > *(start_right + 1) and
+      //At this point, *(start_right + 1) < *start_left and
       // [start_left : end_left] has at least 2 elements.
     }
 
     //*(end_left - 1) is well-defined since start_left < end_left.
     if (*(end_left - 1) <= *end_right) {
-      do {//Note end_right >= start_right + 1 since *end_left >= *(end_left - 1)
+      do {//Note end_right >= start_right + 1 since *end_left >= *(end_left -1)
                         // >= *start_left > *(start_right + 1) >= *start_right.
         std::swap(*(end_right--), *end_left);
       } while (*(end_left - 1) <= *end_right) ;
-      if (start_right >= end_right || *start_left >= *end_right) {
+      if (end_right <= start_right || *end_right <= *start_left) {
         is_trivial = true;
         break;
       }
@@ -382,7 +389,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
       } while (*(end_left - 2) <= *(end_right - 1)) ;
       if (*(end_left - 1) <= *end_right)
         std::swap(*end_left, *(end_right--));
-      if (*start_left >= *end_right) {
+      if (*end_right <= *start_left) {
         is_trivial = true;
         break;
       }
@@ -395,7 +402,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
       *(end_left - 1) = *end_right;
       *end_right      = temp;
       --end_right;
-      if (*start_left >= *end_right) {
+      if (*end_right <= *start_left) {
         is_trivial = true;
         break;
       }
@@ -431,7 +438,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
       if (*start_left == *(start_right + 1)) {
         std::swap(*(start_left++), *start_right);
       }
-      if (*start_left >= *end_right) {
+      if (*end_right <= *start_left) {
         is_trivial = true;
         break;
       }
@@ -443,7 +450,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
       *start_right       = *(start_right + 1);
       *(start_right + 1)   = temp;
       ++start_left;
-      if (*start_left >= *end_right) {
+      if (*end_right <= *start_left) {
         is_trivial = true;
         break;
       }
@@ -480,7 +487,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
         *(end_left - 2) = temp;
         end_right       = end_right - 1;
       }
-      if (start_right >= end_right || *start_left >= *end_right) {
+      if (end_right <= start_right || *end_right <= *start_left) {
         is_trivial = true;
         break;
       }
@@ -488,15 +495,15 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
     }
 
     //At this point, start_right + 3 <= end_right and start_left + 2 <= end_left
-    if (*(start_right + 3) >= *start_left) {
-      if (*(start_right + 3) >= *(start_left + 2)) {
+    if (*start_left <= *(start_right + 3)) {
+      if (*(start_left + 2) <= *(start_right + 3)) {
         std::iter_swap(start_left, start_right);
         std::iter_swap(start_left + 1, start_right + 1);
         std::iter_swap(start_left + 2, start_right + 2);
         start_left = start_left + 3;
       }
       //At this point *(start_right + 3) < *(start_left + 2).
-      else if (*(start_right + 3) >= *(start_left + 1)) {
+      else if (*(start_left + 1) <= *(start_right + 3)) {
         //Rotate start_left, start_left + 1, start_right, start_right + 1,
         // start_right + 2 to the left by 2.
         auto temp          = *start_right;
@@ -508,7 +515,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
         start_left         = start_left + 2;
       }
       //At this point *(start_right + 3) < *(start_left + 1)) and
-      // *(start_right + 3) >= *start_left.
+      // *start_left <= *(start_right + 3).
       else {
         //Rotate start_left, start_right, start_right + 1, start_right + 2
         // to the left by 1.
@@ -519,16 +526,16 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
         *(start_right + 2) = temp;
         start_left       = start_left + 1;
       }
-      if (start_left >= end_left || *start_left >= *end_right) {
+      if (end_left <= start_left || *end_right <= *start_left) {
         is_trivial = true;
         break;
       }
       continue ;
     }
 
-    //At this point, end_left - 4 >= start_left and end_right - 3 >= start_right
+    //At this point, end_left - 4 >= start_left and start_right <= end_right - 3
     if (*(end_left - 4) <= *end_right) {
-      if (end_right - 3 >= start_right && *(end_left - 4) <= *(end_right - 3)) {
+      if (start_right <= end_right - 3 && *(end_left - 4) <= *(end_right - 3)) {
         std::iter_swap(end_left - 3, end_right - 3);
         std::iter_swap(end_left - 2, end_right - 2);
         std::iter_swap(end_left - 1, end_right - 1);
@@ -577,7 +584,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
         *(end_left - 3) = temp;
         end_right       = end_right - 1;
       }
-      if (start_right >= end_right || *start_left >= *end_right) {
+      if (end_right <= start_right || *end_right <= *start_left) {
         is_trivial = true;
         break;
       }
@@ -585,8 +592,8 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
     }
 
     //At this point, start_right + 4 <= end_right and start_left + 3 <= end_left
-    if (*(start_right + 4) >= *start_left) {
-      if (*(start_right + 4) >= *(start_left + 3)) {
+    if (*start_left <= *(start_right + 4)) {
+      if (*(start_left + 3) <= *(start_right + 4)) {
         std::iter_swap(start_left, start_right);
         std::iter_swap(start_left + 1, start_right + 1);
         std::iter_swap(start_left + 2, start_right + 2);
@@ -594,7 +601,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
         start_left = start_left + 4;
       }
       //At this point *(start_right + 4) < *(start_left + 3).
-      else if (*(start_right + 4) >= *(start_left + 2)) {
+      else if (*(start_left + 2) <= *(start_right + 4)) {
         //Rotate start_left, start_left + 1, start_left + 2, start_right,
         // start_right + 1, start_right + 2, start_right + 3 to the left by 3.
         auto temp          = *start_right;
@@ -608,7 +615,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
         start_left         = start_left + 3;
       }
       //At this point *(start_right + 4) < *(start_left + 2).
-      else if (*(start_right + 4) >= *(start_left + 1)) {
+      else if (*(start_left + 1) <= *(start_right + 4)) {
         //Rotate start_left, start_left + 1, start_right, start_right + 1,
         // start_right + 2, start_right + 3 to the left by 2.
         auto temp          = *start_right;
@@ -622,7 +629,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
         start_left         = start_left + 2;
       }
       //At this point *(start_right + 3) < *(start_left + 1)) and
-      // *(start_right + 4) >= *start_left.
+      // *start_left <= *(start_right + 4).
       else {
         //Rotate start_left, start_right, start_right + 1, start_right + 2,
         // start_right + 3 to the left by 1.
@@ -634,7 +641,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
         *(start_right + 3) = temp;
         start_left       = start_left + 1;
       }
-      if (start_left >= end_left || *start_left >= *end_right) {
+      if (end_left <= start_left || *end_right <= *start_left) {
         is_trivial = true;
         break;
       }
@@ -643,16 +650,16 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
 
     auto length_left  = std::distance(start_left, end_left + 1);
     auto length_right = std::distance(start_right, end_right + 1);
-    if (length_left <= length_right && *start_left >=
-                                            *(start_right + length_left - 1)) {
+    if (length_left <= length_right && *(start_right + length_left - 1) <=
+                                       *start_left) {
       std::swap_ranges(start_left, end_left + 1, start_right);
       start_left   = start_right;
       start_right += length_left;
       end_left    += length_left;
       continue ;
     }
-    if (length_left >= length_right && *(end_left - (length_right - 1)) >=
-                                                                  *end_right) {
+    if (length_left >= length_right && *end_right <=
+                                            *(end_left - (length_right - 1)) ) {
       std::swap_ranges(start_right, end_right + 1, end_left - (length_right-1));
       end_left   -= length_right;
       start_right = end_left + 1;
@@ -663,7 +670,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
   }
 
   if (is_trivial) {
-    MergeWithoutBufferNamespace::MergeTrivialCases(start_left, end_left, start_right, end_right);
+    MergeTrivialCases(start_left, end_left, start_right, end_right);
     start_left_out   = end_left + 1;
     end_left_out     = end_left;
     start_right_out  = end_right + 1;
@@ -676,6 +683,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
   end_right_out    = end_right;
   return ;
 }
+
 
 /*Assumes that start_left <= start_right and start_right <= end_right and that
  * the values of the intervals of iterators [start_left, end_left] and
@@ -691,31 +699,32 @@ template<class RAI, class RAI2>
 void MergeWithOutBuffer(RAI start_left,   RAI end_left,
                         RAI2 start_right, RAI2 end_right) {
   int length_left, length_right, length_smaller, d;
-  MergeWithoutBufferNamespace::TrimEnds5(start_left, end_left, start_right, end_right);
+  TrimEnds5(start_left, end_left,
+                                         start_right, end_right);
   length_left  = std::distance(start_left, end_left + 1);
   length_right = std::distance(start_right, end_right + 1);
   length_smaller = length_left < length_right ? length_left : length_right;
   //Check for triviality.
   if (length_smaller <= 1) {
-    MergeWithoutBufferNamespace::MergeTrivialCases(start_left, end_left, start_right, end_right, length_left,
-                                          length_right);
+    MergeTrivialCases(start_left, end_left,
+                             start_right, end_right, length_left, length_right);
     return ;
   }
   //At this point we're guaranteed to have start_left < start_right and
   // *start_left > *start_right.
-  d = MergeWithoutBufferNamespace::DisplacementFromMiddleIteratorToPotentialMedians_KnownToExist(end_left,
-                                                   start_right, length_smaller);
+  d = DisplacementFromMiddleIteratorToPotentialMedians_KnownToExist(
+                                        end_left, start_right, length_smaller);
   auto start_2nd_quarter = end_left - (d - 1);
   std::swap_ranges(start_2nd_quarter, end_left + 1, start_right);
   auto start_4th_quarter = start_right + d;
-  MergeWithoutBufferNamespace::MergeWithOutBuffer(start_left, start_2nd_quarter - 1, start_2nd_quarter,
-                                         end_left);
-  MergeWithoutBufferNamespace::MergeWithOutBuffer(start_right, start_4th_quarter - 1, start_4th_quarter,
-                                         end_right);
+  MergeWithOutBuffer(start_left,
+                            start_2nd_quarter - 1, start_2nd_quarter, end_left);
+  MergeWithOutBuffer(start_right,
+                           start_4th_quarter - 1, start_4th_quarter, end_right);
   return ;
 }
 
-} //End namespace MergeWithoutBufferNamespace
+} //End anonymous namespace
 
 /* Assumes that RAI and RAI2 are both Random Access Iterators.
  * Note that RAI and RAI2 need not be the same type but they must
@@ -729,7 +738,8 @@ void MergeWithOutBuffer(RAI start_left,   RAI end_left,
  * is meant to appear to the LEFT of the second sequence.
  *
  * This function will rearrange all elements so that
- *  *start1 <= *(start1 + 1) <= ... <= *end1 <= *start2 <= *(start2 + 1) <= ... <= *end2
+ *  *start1 <= *(start1 + 1) <= ... <= *end1 <= *start2 <= *(start2 + 1) <= ...
+ *          <= *end2
  * (Note that start1 == end1 is allowed so that *(start1 + 1) need not
  *   actually be defined. Similarily start2 == end2 is allowed.)
  *
@@ -740,7 +750,7 @@ void MergeWithOutBuffer(RAI start_left,   RAI end_left,
 template<class RAI, class RAI2>
 inline void MergeWithOutBuffer(RAI  start1, RAI  end1,
                                RAI2 start2, RAI2 end2) {
-  MergeWithoutBufferNamespace::MergeWithOutBuffer(start1, end1, start2, end2);
+  MergeWithOutBuffer(start1, end1, start2, end2);
 }
 
 #endif /* SRC_MERGE_WITHOUT_BUFFER_STANDALONE_H_ */
