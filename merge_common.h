@@ -175,7 +175,6 @@ inline void RotateRightByExactlyOneElement(RAI start, RAI end,
 template<class RAI>
 inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
                                                RAI start_right, RAI end_right) {
-assert(*end_right <= *start_left);
   auto end_left_plus1  = end_left;
   ++end_left_plus1;
   auto end_right_plus1 = end_right;
@@ -213,7 +212,6 @@ assert(*end_right <= *start_left);
 template<class RAI, class RAI2>
 inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
                                              RAI2 start_right, RAI2 end_right) {
-assert(*end_right <= *start_left);
   auto end_left_plus1  = end_left;
   ++end_left_plus1;
   auto end_right_plus1 = end_right;
