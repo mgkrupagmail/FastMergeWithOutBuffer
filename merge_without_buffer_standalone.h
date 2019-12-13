@@ -316,7 +316,8 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
   auto start_right = start_right_out, end_right = end_right_out;
   bool is_trivial = false;
   while (true) {
-    if (*end_left <= *start_right || start_right <= start_left) {
+    if (*end_left <= *start_right //Formerly included: || start_right <= start_left
+        ) {
       start_left_out   = end_left + 1;
       end_left_out     = end_left;
       start_right_out  = end_right + 1;
