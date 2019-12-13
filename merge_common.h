@@ -130,7 +130,7 @@ template<class RAI, class RAI2>
 inline void RotateLeftByExactlyOneElement(RAI start, RAI end,
                                           RAI2 ele_to_shift) {
   const auto value = *ele_to_shift;
-  if (*start >= value)
+  if (value <= *start)
     return ;
   else
     std::iter_swap(start, ele_to_shift);
@@ -172,31 +172,66 @@ inline void RotateRightByExactlyOneElement(RAI start, RAI end,
  *  [start_right, ... , end_right, start_left, ..., end_left].
  * This is a helper function for MergeTrivialCases().
  */
+template<class RAI>
+inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
+                                               RAI start_right, RAI end_right) {
+assert(*end_right <= *start_left);
+  auto end_left_plus1  = end_left;
+  ++end_left_plus1;
+  auto end_right_plus1 = end_right;
+  ++end_right_plus1;
+  if (end_left_plus1 == start_right) {
+    std::rotate(start_left, start_right, end_right_plus1);
+  } else {
+    auto length_left  = std::distance(start_left, end_left_plus1);
+    auto length_right = std::distance(start_right, end_right_plus1);
+    if (length_right < length_left) {
+      auto new_start_right = end_left_plus1;
+      std::advance(new_start_right, -length_right);
+      std::swap_ranges(start_right, end_right_plus1, new_start_right);
+      std::rotate(start_left, new_start_right, end_left_plus1);
+    } else { //Else length_left <= length_right
+      std::swap_ranges(start_left, end_left_plus1, start_right);
+      if (length_left == length_right)
+        return ;
+      auto new_start_right = start_right;
+      std::advance(new_start_right, length_left);
+      std::rotate(start_right, new_start_right, end_right_plus1);
+    }
+  }
+  return ;
+}
+
+/* Given two ranges [start_left, end_left] and [start_right, end_right], this
+ *  function moves all elements in such a way that in the range
+ *  [start_left, ... , end_left, start_right, ..., end_right] all elements
+ *  will be shifted right by std::distance(start_right, end_right + 1),
+ *  resulting in the range:
+ *  [start_right, ... , end_right, start_left, ..., end_left].
+ * This is a helper function for MergeTrivialCases().
+ */
 template<class RAI, class RAI2>
 inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
                                              RAI2 start_right, RAI2 end_right) {
-  auto end_left_plus1  = end_left + 1;
-  auto end_right_plus1 = end_right + 1;
+assert(*end_right <= *start_left);
+  auto end_left_plus1  = end_left;
+  ++end_left_plus1;
+  auto end_right_plus1 = end_right;
+  ++end_right_plus1;
   auto length_left  = std::distance(start_left, end_left_plus1);
   auto length_right = std::distance(start_right, end_right_plus1);
-
-  while (length_left > 0 && length_right > 0) {
-    RAI start_swap1, end_swap1, start_swap2;
-    if (length_left < length_right) {
-      start_swap1   = start_left;
-      end_swap1     = end_left_plus1;
-      start_swap2   = end_right_plus1 - length_left;
-      length_right -= length_left;
-      end_right    -= length_left;
-      end_right_plus1 = end_right + 1;
-    } else {
-      start_swap1  = start_right;
-      end_swap1    = end_right_plus1;
-      start_swap2  = start_left;
-      length_left -= length_right;
-      start_left  += length_right;
-    }
-    std::swap_ranges(start_swap1, end_swap1, start_swap2);
+  if (length_right < length_left) {
+    auto new_start_right = end_left_plus1;
+    std::advance(new_start_right, -length_right);
+    std::swap_ranges(start_right, end_right_plus1, new_start_right);
+    std::rotate(start_left, new_start_right, end_left_plus1);
+  } else { //Else length_left <= length_right
+    std::swap_ranges(start_left, end_left_plus1, start_right);
+    if (length_left == length_right)
+      return ;
+    auto new_start_right = start_right;
+    std::advance(new_start_right, length_left);
+    std::rotate(start_right, new_start_right, end_right_plus1);
   }
   return ;
 }
@@ -210,7 +245,7 @@ void MergeTrivialCases(RAI start_left,  RAI end_left,
                        long length_left, long length_right) {
   if (length_left <= 0 || length_right <= 0 || *end_left <= *start_right)
     return ;
-  else if (*start_left >= *end_right) {
+  else if (*end_right <= *start_left) {
     ///Note that this function has the same effect as
     // std::rotate(vec.begin() + start_left, vec.begin() + start_right,
     //             vec.begin() + (end_right + 1));
