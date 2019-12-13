@@ -25,9 +25,9 @@
  *  (1) If *end_left > *(end_left + 1) and such a d exists then d is
  *       necessarily > 0.
  */
-template<class RAI>
+template<class RAI, class RAI2>
 int DisplacementFromMiddleIteratorToPotentialMedians_KnownToExist(
-                        const RAI end_left,const RAI start_right, int length) {
+                        const RAI end_left,const RAI2 start_right, int length) {
   (void)length--;  //We will now use length_left as if it were d_upper.
   int d_lower = 0; //So that end_left - d_lower = end_left
   do {
@@ -126,9 +126,9 @@ inline RAI LargestIteratorWithValueLessThan_KnownToExist(RAI start_it,
  * If such a d does not exist then it does nothing.
  * This is a helper function for MergeTrivialCases().
  */
-template<class RAI>
+template<class RAI, class RAI2>
 inline void RotateLeftByExactlyOneElement(RAI start, RAI end,
-                                          RAI ele_to_shift) {
+                                          RAI2 ele_to_shift) {
   const auto value = *ele_to_shift;
   if (*start >= value)
     return ;
@@ -152,9 +152,9 @@ inline void RotateLeftByExactlyOneElement(RAI start, RAI end,
  * If such a d does not exist then it does nothing.
  * This is a helper function for MergeTrivialCases().
  */
-template<class RAI>
+template<class RAI, class RAI2>
 inline void RotateRightByExactlyOneElement(RAI start, RAI end,
-                                           RAI ele_to_shift) {
+                                           RAI2 ele_to_shift) {
   const auto value = *ele_to_shift;
   if (*end <= value)
     return ;
@@ -172,9 +172,9 @@ inline void RotateRightByExactlyOneElement(RAI start, RAI end,
  *  [start_right, ... , end_right, start_left, ..., end_left].
  * This is a helper function for MergeTrivialCases().
  */
-template<class RAI>
+template<class RAI, class RAI2>
 inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
-                                         RAI start_right, RAI end_right) {
+                                             RAI2 start_right, RAI2 end_right) {
   auto end_left_plus1  = end_left + 1;
   auto end_right_plus1 = end_right + 1;
   auto length_left  = std::distance(start_left, end_left_plus1);
@@ -204,8 +204,9 @@ inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
 /* This is a helper function that merges two ranges when the merge is trivial,
  *  by which it is meant that length_left <= 1 or length_right <= 1.
  */
-template<class T>
-void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_right,
+template<class RAI, class RAI2>
+void MergeTrivialCases(RAI start_left,  RAI end_left,
+                       RAI2 start_right, RAI2 end_right,
                        long length_left, long length_right) {
   if (length_left <= 0 || length_right <= 0 || *end_left <= *start_right)
     return ;
@@ -217,21 +218,21 @@ void MergeTrivialCases(T start_left,  T end_left, T start_right, T end_right,
     ShiftRightSideToTheRightByItsLength(start_left, end_left, start_right,
                                         end_right);
   } else if (end_left == start_left) {
-    RotateLeftByExactlyOneElement(start_right, end_right, end_left);
+    RotateLeftByExactlyOneElement<RAI2, RAI>(start_right, end_right, end_left);
   } else {// if (start_right == end_right) {
-    RotateRightByExactlyOneElement(start_left, end_left, start_right);
+    RotateRightByExactlyOneElement<RAI,RAI2>(start_left, end_left, start_right);
   }
   return ;
 }
 
 /* Overload of MergeTrivialCases().
  */
-template<class T>
-inline void MergeTrivialCases(T start_left,  T end_left,
-                              T start_right,T end_right) {
+template<class RAI, class RAI2>
+inline void MergeTrivialCases(RAI  start_left,  RAI end_left,
+                              RAI2 start_right, RAI2 end_right) {
   auto length_left  = std::distance(start_left,  end_left + 1);
   auto length_right = std::distance(start_right, end_right + 1);
-  MergeTrivialCases(start_left, end_left, start_right, end_right,
+  MergeTrivialCases<RAI, RAI2>(start_left, end_left, start_right, end_right,
                     length_left, length_right);
   return ;
 }
