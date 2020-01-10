@@ -492,4 +492,17 @@ inline void MergeWithOutBufferTrim5(RandomAccessIterator1 start_left,
   return ;
 }
 
+template<class RandomAccessIterator>
+inline void MergeWithOutBufferTrim5(RandomAccessIterator start_left,
+                                    RandomAccessIterator start_right,
+                                    RandomAccessIterator one_past_end) {
+  auto length_left  = std::distance(start_left, start_left);
+  auto length_right = std::distance(start_right, one_past_end);
+  MergeWithOutBufferTrim5<RandomAccessIterator, RandomAccessIterator>(
+                             start_left, start_right - 1,
+                             start_right, one_past_end - 1,
+                             length_left, length_right);
+  return ;
+}
+
 #endif /* SRC_MERGE_WITHOUT_BUFFER_TRIM5_H_ */
