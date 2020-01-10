@@ -346,10 +346,23 @@ inline void MergeWithOutBufferTrim4(RandomAccessIterator1 start_left,
                                     RandomAccessIterator1 end_left,
                                     RandomAccessIterator2 start_right,
                                     RandomAccessIterator2 end_right) {
-  auto length_left  = std::distance(start_left, end_left + 1);
-  auto length_right = std::distance(start_right, end_right + 1);
+  auto length_left  = std::distance(start_left, end_left) + 1;
+  auto length_right = std::distance(start_right, end_right) + 1;
   MergeWithOutBufferTrim4<RandomAccessIterator1, RandomAccessIterator2>(start_left, end_left,
                              start_right, end_right, length_left, length_right);
+  return ;
+}
+
+template<class RandomAccessIterator>
+inline void MergeWithOutBufferTrim4(RandomAccessIterator start_left,
+                                    RandomAccessIterator start_right,
+                                    RandomAccessIterator one_past_end) {
+  auto length_left  = std::distance(start_left, start_left);
+  auto length_right = std::distance(start_right, one_past_end);
+  MergeWithOutBufferTrim4<RandomAccessIterator, RandomAccessIterator>(
+                             start_left, start_right - 1,
+                             start_right, one_past_end - 1,
+                             length_left, length_right);
   return ;
 }
 
