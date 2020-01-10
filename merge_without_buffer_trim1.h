@@ -150,7 +150,7 @@ template<class RandomAccessIterator>
 inline void MergeWithOutBufferTrim1(RandomAccessIterator start_left,
                                     RandomAccessIterator start_right,
                                     RandomAccessIterator one_past_end) {
-  auto length_left  = std::distance(start_left, start_left);
+  auto length_left  = std::distance(start_left, start_right);
   auto length_right = std::distance(start_right, one_past_end);
   MergeWithOutBufferTrim1<RandomAccessIterator, RandomAccessIterator>(
                              start_left, start_right - 1,
