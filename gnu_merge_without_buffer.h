@@ -134,6 +134,19 @@ template<typename _BidirectionalIterator, typename _Distance,
       }
 }
 
+template<typename Iterator, typename Compare, typename Distance>
+struct GnuMergeWithoutBuffer {
+  inline void operator()(Iterator start_left,
+      Iterator start_right,
+      Iterator one_past_end_right,
+      Distance length_left,
+      Distance length_right,
+      Compare comp) {
+    gnu::gnu__merge_without_buffer<Iterator, Distance, Compare>(start_left,
+        start_right, one_past_end_right, length_left, length_right, comp);
+    return ;
+  }
+};
 
 
 
