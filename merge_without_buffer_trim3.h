@@ -21,7 +21,7 @@
  *  details since this is just TrimEnds5() with some code removed.
  * If *end_left <= *start_right then we return true. Otherwise, we return false.
  */
-template<class RandomAccessIterator1, class RandomAccessIterator2>
+template<typename RandomAccessIterator1, typename RandomAccessIterator2>
 bool TrimEnds3(RandomAccessIterator1 &start_left_out,
                RandomAccessIterator1 &end_left_out,
                RandomAccessIterator2 &start_right_out,
@@ -215,7 +215,7 @@ bool TrimEnds3(RandomAccessIterator1 &start_left_out,
 }
 
 //Assumes that start_left <= start_right
-template<class RandomAccessIterator1, class RandomAccessIterator2>
+template<typename RandomAccessIterator1, typename RandomAccessIterator2>
 void MergeWithOutBufferTrim3(RandomAccessIterator1 start_left,
                              RandomAccessIterator1 end_left,
                              RandomAccessIterator2 start_right,
@@ -265,7 +265,7 @@ assert(static_cast<long>(length_4th_quarter) ==
   return ;
 }
 
-template<class RandomAccessIterator1, class RandomAccessIterator2>
+template<typename RandomAccessIterator1, typename RandomAccessIterator2>
 inline void MergeWithOutBufferTrim3(RandomAccessIterator1 start_left,
                                     RandomAccessIterator1 end_left,
                                     RandomAccessIterator2 start_right,
@@ -277,7 +277,21 @@ inline void MergeWithOutBufferTrim3(RandomAccessIterator1 start_left,
   return ;
 }
 
-template<class RandomAccessIterator>
+template<typename RandomAccessIterator, typename Compare>
+inline void MergeWithOutBufferTrim3(RandomAccessIterator start_left,
+                                    RandomAccessIterator start_right,
+                                    RandomAccessIterator one_past_end,
+                                    Compare comp) {
+  auto length_left  = std::distance(start_left, start_right);
+  auto length_right = std::distance(start_right, one_past_end);
+  MergeWithOutBufferTrim3<RandomAccessIterator, RandomAccessIterator>(
+                             start_left, start_right - 1,
+                             start_right, one_past_end - 1,
+                             length_left, length_right);
+  return ;
+}
+
+template<typename RandomAccessIterator>
 inline void MergeWithOutBufferTrim3(RandomAccessIterator start_left,
                                     RandomAccessIterator start_right,
                                     RandomAccessIterator one_past_end) {
@@ -289,5 +303,19 @@ inline void MergeWithOutBufferTrim3(RandomAccessIterator start_left,
                              length_left, length_right);
   return ;
 }
+
+template<typename Iterator, typename Compare, typename Distance>
+struct MergeWOBuffTrim3 {
+  inline void operator()(Iterator start_left,
+      Iterator start_right,
+      Iterator one_past_end_right,
+      Distance length_left,
+      Distance length_right,
+      Compare comp) {
+    MergeWithOutBufferTrim3<Iterator>(start_left, start_right,
+                                      one_past_end_right, comp);
+    return ;
+  }
+};
 
 #endif /* SRC_MERGE_WITHOUT_BUFFER_TRIM3_H_ */
