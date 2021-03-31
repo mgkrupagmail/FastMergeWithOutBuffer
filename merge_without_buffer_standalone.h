@@ -84,9 +84,9 @@ int DisplacementFromMiddleIteratorToPotentialMedians_KnownToExist(
  * If such a d does not exist then it does nothing.
  * This is a helper function for MergeTrivialCases().
  */
-template<class RAI>
+template<class RAI, class RAI2>
 inline void RotateLeftByExactlyOneElement(RAI start, RAI end,
-                                          RAI ele_to_shift) {
+                                          RAI2 ele_to_shift) {
   const auto value = *ele_to_shift;
   if (value <= *start)
     return ;
@@ -110,9 +110,9 @@ inline void RotateLeftByExactlyOneElement(RAI start, RAI end,
  * If such a d does not exist then it does nothing.
  * This is a helper function for MergeTrivialCases().
  */
-template<class RAI>
+template<class RAI, class RAI2>
 inline void RotateRightByExactlyOneElement(RAI start, RAI end,
-                                           RAI ele_to_shift) {
+                                           RAI2 ele_to_shift) {
   const auto value = *ele_to_shift;
   if (*end <= value)
     return ;
@@ -133,28 +133,61 @@ inline void RotateRightByExactlyOneElement(RAI start, RAI end,
 template<class RAI>
 inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
                                                RAI start_right, RAI end_right) {
-  auto end_left_plus1  = end_left + 1;
-  auto end_right_plus1 = end_right + 1;
+  auto end_left_plus1  = end_left;
+  ++end_left_plus1;
+  auto end_right_plus1 = end_right;
+  ++end_right_plus1;
+  if (end_left_plus1 == start_right) {
+    std::rotate(start_left, start_right, end_right_plus1);
+  } else {
+    auto length_left  = std::distance(start_left, end_left_plus1);
+    auto length_right = std::distance(start_right, end_right_plus1);
+    if (length_right < length_left) {
+      auto new_start_right = end_left_plus1;
+      std::advance(new_start_right, -length_right);
+      std::swap_ranges(start_right, end_right_plus1, new_start_right);
+      std::rotate(start_left, new_start_right, end_left_plus1);
+    } else { //Else length_left <= length_right
+      std::swap_ranges(start_left, end_left_plus1, start_right);
+      if (length_left == length_right)
+        return ;
+      auto new_start_right = start_right;
+      std::advance(new_start_right, length_left);
+      std::rotate(start_right, new_start_right, end_right_plus1);
+    }
+  }
+  return ;
+}
+
+/* Given two ranges [start_left, end_left] and [start_right, end_right], this
+ *  function moves all elements in such a way that in the range
+ *  [start_left, ... , end_left, start_right, ..., end_right] all elements
+ *  will be shifted right by std::distance(start_right, end_right + 1),
+ *  resulting in the range:
+ *  [start_right, ... , end_right, start_left, ..., end_left].
+ * This is a helper function for MergeTrivialCases().
+ */
+template<class RAI, class RAI2>
+inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
+                                             RAI2 start_right, RAI2 end_right) {
+  auto end_left_plus1  = end_left;
+  ++end_left_plus1;
+  auto end_right_plus1 = end_right;
+  ++end_right_plus1;
   auto length_left  = std::distance(start_left, end_left_plus1);
   auto length_right = std::distance(start_right, end_right_plus1);
-
-  while (length_left > 0 && length_right > 0) {
-    RAI start_swap1, end_swap1, start_swap2;
-    if (length_left < length_right) {
-      start_swap1   = start_left;
-      end_swap1     = end_left_plus1;
-      start_swap2   = end_right_plus1 - length_left;
-      length_right -= length_left;
-      end_right    -= length_left;
-      end_right_plus1 = end_right + 1;
-    } else {
-      start_swap1  = start_right;
-      end_swap1    = end_right_plus1;
-      start_swap2  = start_left;
-      length_left -= length_right;
-      start_left  += length_right;
-    }
-    std::swap_ranges(start_swap1, end_swap1, start_swap2);
+  if (length_right < length_left) {
+    auto new_start_right = end_left_plus1;
+    std::advance(new_start_right, -length_right);
+    std::swap_ranges(start_right, end_right_plus1, new_start_right);
+    std::rotate(start_left, new_start_right, end_left_plus1);
+  } else { //Else length_left <= length_right
+    std::swap_ranges(start_left, end_left_plus1, start_right);
+    if (length_left == length_right)
+      return ;
+    auto new_start_right = start_right;
+    std::advance(new_start_right, length_left);
+    std::rotate(start_right, new_start_right, end_right_plus1);
   }
   return ;
 }
@@ -162,9 +195,9 @@ inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
 /* This is a helper function that merges two ranges when the merge is trivial,
  *  by which it is meant that length_left <= 1 or length_right <= 1.
  */
-template<class Iterator>
-void MergeTrivialCases(Iterator start_left,  Iterator end_left,
-                       Iterator start_right, Iterator end_right,
+template<class Iterator, class Iterator2>
+void MergeTrivialCases(Iterator  start_left,  Iterator  end_left,
+                       Iterator2 start_right, Iterator2 end_right,
                        long length_left, long length_right) {
   if (length_left <= 0 || length_right <= 0 || *end_left <= *start_right)
     return ;
@@ -173,13 +206,13 @@ void MergeTrivialCases(Iterator start_left,  Iterator end_left,
     // std::rotate(vec.begin() + start_left, vec.begin() + start_right,
     //             vec.begin() + (end_right + 1));
     // except that it works for ranges iterated by distinct objects.
-    ShiftRightSideToTheRightByItsLength(start_left,
+    ShiftRightSideToTheRightByItsLength<Iterator, Iterator2>(start_left,
                                               end_left, start_right, end_right);
   } else if (end_left == start_left) {
-    RotateLeftByExactlyOneElement(start_right,
+    RotateLeftByExactlyOneElement<Iterator, Iterator2>(start_right,
                                                            end_right, end_left);
   } else {// if (start_right == end_right) {
-    RotateRightByExactlyOneElement(start_left,
+    RotateRightByExactlyOneElement<Iterator, Iterator2>(start_left,
                                                          end_left, start_right);
   }
   return ;
@@ -187,12 +220,12 @@ void MergeTrivialCases(Iterator start_left,  Iterator end_left,
 
 /* Overload of MergeTrivialCases().
  */
-template<class Iterator>
-inline void MergeTrivialCases(Iterator start_left,  Iterator end_left,
-                              Iterator start_right, Iterator end_right) {
+template<class Iterator, class Iterator2>
+inline void MergeTrivialCases(Iterator  start_left,  Iterator  end_left,
+                              Iterator2 start_right, Iterator2 end_right) {
   auto length_left  = std::distance(start_left,  end_left + 1);
   auto length_right = std::distance(start_right, end_right + 1);
-  MergeTrivialCases<Iterator>(start_left, end_left,
+  MergeTrivialCases<Iterator, Iterator2>(start_left, end_left,
                              start_right, end_right, length_left, length_right);
   return ;
 }
@@ -697,7 +730,7 @@ void TrimEnds5(RAI &start_left_out,   RAI &end_left_out,
  *  merge_time.h.
  */
 template<class RAI, class RAI2>
-void MergeWithOutBuffer(RAI start_left,   RAI end_left,
+void MergeWithOutBufferX(RAI start_left,   RAI end_left,
                         RAI2 start_right, RAI2 end_right) {
   int length_left, length_right, length_smaller, d;
   TrimEnds5(start_left, end_left,
@@ -718,9 +751,9 @@ void MergeWithOutBuffer(RAI start_left,   RAI end_left,
   auto start_2nd_quarter = end_left - (d - 1);
   std::swap_ranges(start_2nd_quarter, end_left + 1, start_right);
   auto start_4th_quarter = start_right + d;
-  MergeWithOutBuffer(start_left,
+  MergeWithOutBufferX(start_left,
                             start_2nd_quarter - 1, start_2nd_quarter, end_left);
-  MergeWithOutBuffer(start_right,
+  MergeWithOutBufferX(start_right,
                            start_4th_quarter - 1, start_4th_quarter, end_right);
   return ;
 }
@@ -749,9 +782,9 @@ void MergeWithOutBuffer(RAI start_left,   RAI end_left,
  * This algorithm is both inplace and stable.
  */
 template<class RAI, class RAI2>
-inline void MergeWithOutBuffer(RAI  start1, RAI  end1,
+inline void MergeWithOutBufferX(RAI  start1, RAI  end1,
                                RAI2 start2, RAI2 end2) {
-  MergeWithOutBuffer(start1, end1, start2, end2);
+  MergeWithOutBufferX(start1, end1, start2, end2);
 }
 
 #endif /* SRC_MERGE_WITHOUT_BUFFER_STANDALONE_H_ */
