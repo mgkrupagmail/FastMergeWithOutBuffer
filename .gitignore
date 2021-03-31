@@ -1,3 +1,8 @@
+merge_without_buffer_standalone.h
+merge_without_buffer_trim1.h
+merge_without_buffer_trim2.h
+merge_without_buffer_trim3.h
+
 # Prerequisites
 *.d
 
