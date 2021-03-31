@@ -47,22 +47,23 @@ int DisplacementFromMiddleIteratorToPotentialMedians_KnownToExist(
  * In addition to performing a binary search, it simultaneously performs a
  *  linear search starting from the end_it.
  */
-template<class ForwardIterator, class T>
-ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(
-             ForwardIterator start_it, ForwardIterator end_it, const T value) {
+template<class RandomAccessIterator, class T>
+RandomAccessIterator SmallestIteratorWithValueGreaterThan_KnownToExist(
+    RandomAccessIterator start_it, RandomAccessIterator end_it, const T &value,
+    std::random_access_iterator_tag) {
   while (true) {
     //The below lines are optional. They are performed at most
     // std::distance(start_it, d) + 1 times.
     if (*start_it > value)
       return start_it;
-    (void)start_it++;
+    (void)++start_it;
 
     //The below lines are optional. They are performed at most
     // std::distance(d, end_it) + 1 times.
     auto cur_length_minus_one = std::distance(start_it, end_it);
     if (*(start_it + cur_length_minus_one - 1) <= value)
       return end_it;
-    (void)end_it--;
+    (void)--end_it;
 
     auto d = start_it + std::distance(start_it, end_it) / 2;
     if (*d <= value)
@@ -73,6 +74,49 @@ ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(
   }
   //At this point, start_it == end_it OR start_it == end_it + 1.
   //return start_it + (vec[start_it] > value ? 0 : 1);
+  //This return value should not execute.
+  return start_it;
+}
+
+template<class BiDirectionalIterator, class T>
+BiDirectionalIterator SmallestIteratorWithValueGreaterThan_KnownToExist(
+    BiDirectionalIterator start_it, BiDirectionalIterator end_it, const T &value,
+             std::bidirectional_iterator_tag) {
+  while (true) {
+    //The below lines are optional. They are performed at most
+    // std::distance(start_it, d) + 1 times.
+    if (*start_it > value)
+      return start_it;
+    (void)++start_it;
+
+    //The below lines are optional. They are performed at most
+    // std::distance(d, end_it) + 1 times.
+    auto one_before_end_it = end_it;
+    (void)--one_before_end_it;
+    if (*one_before_end_it <= value)
+      return end_it;
+    (void)--end_it;
+
+    auto d = start_it;
+    std::advance(start_it, std::distance(start_it, end_it) / 2);
+    if (*d <= value) {
+      start_it = d; //Note that start_it will be <= end_it since the
+                    //desired iterator is known to exist.
+      (void)++d;
+    }else
+      end_it   = d;
+  }
+  //At this point, start_it == end_it OR start_it == end_it + 1.
+  //return start_it + (vec[start_it] > value ? 0 : 1);
+  //This return value should not execute.
+  return start_it;
+}
+
+template<class Iterator, class T>
+inline Iterator SmallestIteratorWithValueGreaterThan_KnownToExist(
+                        Iterator start_it, Iterator end_it, const T &value) {
+  return SmallestIteratorWithValueGreaterThan_KnownToExist(start_it, end_it,
+      value, typename std::iterator_traits<Iterator>::iterator_category());
 }
 
 /* Does the equivalent of: while(*end_right >= *end_left) end_right--;
@@ -86,23 +130,24 @@ ForwardIterator SmallestIteratorWithValueGreaterThan_KnownToExist(
  * This algorithm find d by performing <= 3 * min {dist(start_it, d) + 1,
  *  dist(d, end_it) + 1, ceil(log_2(dist(start_it, end_it + 1)))} comparisons.
  */
-template<class RAI, class T>
-inline RAI LargestIteratorWithValueLessThan_KnownToExist(RAI start_it,
-                                                   RAI end_it, const T value) {
+template<class RandomAccessIterator, class T>
+inline RandomAccessIterator LargestIteratorWithValueLessThan_KnownToExist(
+                                    RandomAccessIterator start_it,
+                                    RandomAccessIterator end_it, const T &value,
+                                    std::random_access_iterator_tag) {
   while (true) {//Use:while(start_it < end_it){ if the d is not known to exist.
     //The below three lines are optional. They are performed at most
     // std::distance(d, end_it) + 1 times.
     if (*end_it < value) {
       return end_it;
     }
-    (void)end_it--;
+    (void)--end_it;
 
     //The below three lines are optional. They are performed at most
     // std::distance(start_it, d) + 1 times.
-    if (*(start_it + 1) >= value) {
+    if (*(start_it + 1) >= value)
       return start_it;
-    }
-    (void)start_it++;
+    (void)++start_it;
 
     auto d = start_it + std::distance(start_it, end_it) / 2;
     if (*d < value)
@@ -110,6 +155,107 @@ inline RAI LargestIteratorWithValueLessThan_KnownToExist(RAI start_it,
     else
       end_it   = d - 1;
   }
+  //This return value should not execute.
+  return end_it;
+}
+
+template<class BiDirectionalIterator, class T>
+inline BiDirectionalIterator LargestIteratorWithValueLessThan_KnownToExist(
+                                 BiDirectionalIterator start_it,
+                                 BiDirectionalIterator end_it, const T &value,
+                                 std::bidirectional_iterator_tag) {
+  while (true) {//Use:while(start_it < end_it){ if the d is not known to exist.
+    //The below three lines are optional. They are performed at most
+    // std::distance(d, end_it) + 1 times.
+    if (*end_it < value) {
+      return end_it;
+    }
+    (void)--end_it;
+
+    //The below three lines are optional. They are performed at most
+    // std::distance(start_it, d) + 1 times.
+    auto start_it_plus1 = start_it;
+    ++start_it_plus1;
+    if (*start_it_plus1 >= value)
+      return start_it;
+    start_it = start_it_plus1;
+
+    auto d = start_it;
+    std::advance(d, std::distance(start_it, end_it) / 2);
+    if (*d < value)
+      start_it = d;
+    else {
+      end_it   = d;
+      (void)--end_it;
+    }
+  }
+  //This return value should not execute.
+  return end_it;
+}
+
+template<class Iterator, class T>
+inline Iterator LargestIteratorWithValueLessThan_KnownToExist(
+                        Iterator start_it, Iterator end_it, const T &value) {
+  return LargestIteratorWithValueLessThan_KnownToExist(start_it, end_it,
+      value, typename std::iterator_traits<Iterator>::iterator_category());
+}
+
+template<class BiDirectionalIterator>
+inline void SwapRangesStable(BiDirectionalIterator start_left,
+                             BiDirectionalIterator end_left,
+                             BiDirectionalIterator start_right,
+                             BiDirectionalIterator end_right) {
+  bool not_equal = *end_right < *end_left;
+  auto one_past_end = end_right;
+  (void)++one_past_end;
+  std::swap_ranges(start_left, start_right, one_past_end);
+  if (not_equal)
+    return ;
+  const auto &value = *start_right;
+  BiDirectionalIterator first_equal;
+  if (*start_left < value) {
+    auto end = end_left;
+    (void)--end;
+    first_equal = LargestIteratorWithValueLessThan_KnownToExist(start_left,
+                                                                end, value);
+  } else {
+    first_equal = start_left;
+  }
+  BiDirectionalIterator one_past_last_equal;
+  if (value < *end_right) {
+    auto start = start_right;
+    (void)++start;
+    one_past_last_equal = SmallestIteratorWithValueGreaterThan_KnownToExist(
+                                                       start, end_right, value);
+  } else {
+    one_past_last_equal = one_past_end;
+  }
+  std::rotate(first_equal, start_right, one_past_last_equal);
+  return ;
+}
+
+
+
+
+/*
+ * Assumes that [start_right + 1, end_right] is non-decreasing.
+ * It is possible that *start_right > *(start_right + 1).
+ * This function will rearrange values until [start_right, end_right] is
+ *  non-decreasing.
+ */
+template<class RAI>
+inline void MergeTrivialCasesLeftLength1(RAI start_right, RAI end_right) {
+  if (start_right == end_right)
+    return ;
+  auto start_right_plus1 = start_right;
+  ++start_right_plus1;
+  const auto &start_right_value = *start_right;
+  if (start_right_value <= *start_right_plus1)
+    return ;
+  for (auto it = start_right_plus1; it != end_right
+                                   && *(it + 1) < start_right_value; (void)it++)
+    std::iter_swap(it, it + 1);
+  return ;
 }
 
 /* Assumes that [start, end] is non-decreasing, that the iterator
@@ -127,15 +273,37 @@ inline RAI LargestIteratorWithValueLessThan_KnownToExist(RAI start_it,
  * This is a helper function for MergeTrivialCases().
  */
 template<class RAI, class RAI2>
-inline void RotateLeftByExactlyOneElement(RAI start, RAI end,
-                                          RAI2 ele_to_shift) {
-  const auto value = *ele_to_shift;
-  if (value <= *start)
+inline void MergeTrivialCasesLeftLength1(RAI start_right, RAI end_right,
+                                         RAI2 ele_to_shift) {
+  const auto &value = *ele_to_shift;
+  if (value <= *start_right)
     return ;
   else
-    std::iter_swap(start, ele_to_shift);
-  for (auto it = start; it < end && *(it + 1) < value; (void)it++)
+    std::iter_swap(start_right, ele_to_shift);
+  for (auto it = start_right; it != end_right && *(it + 1) < value; (void)it++)
     std::iter_swap(it, it + 1);
+  return ;
+}
+
+
+/*
+ * Assumes that [start_left, end_left-1] is non-decreasing.
+ * It is possible that *end_left < *(end_left - 1).
+ * This function will rearrange values until [start_left, end_left] is
+ *  non-decreasing.
+ */
+template<class RAI>
+inline void MergeTrivialCasesRightLength1(RAI start_left, RAI end_left) {
+  if (start_left == end_left)
+    return ;
+  auto end_left_minus1 = end_left;
+  --end_left_minus1;
+  const auto &end_left_value = *end_left;
+  if (*end_left_minus1 <= end_left_value)
+    return ;
+  for (auto it = end_left_minus1; it != start_left && end_left_value < *it; (void)it--)
+    std::iter_swap(it, it + 1);
+  return ;
 }
 
 /* Assumes that [start, end] is non-decreasing, that the iterator
@@ -152,17 +320,173 @@ inline void RotateLeftByExactlyOneElement(RAI start, RAI end,
  * If such a d does not exist then it does nothing.
  * This is a helper function for MergeTrivialCases().
  */
+
+
 template<class RAI, class RAI2>
-inline void RotateRightByExactlyOneElement(RAI start, RAI end,
+inline void MergeTrivialCasesRightLength1(RAI start_left, RAI end_left,
                                            RAI2 ele_to_shift) {
-  const auto value = *ele_to_shift;
-  if (*end <= value)
+  const auto &value = *ele_to_shift;
+  if (*end_left <= value)
     return ;
   else
-    std::iter_swap(end, ele_to_shift);
-  for (auto it = end - 1; it > start && *it > value; (void)it--)
+    std::iter_swap(end_left, ele_to_shift);
+  for (auto it = end_left - 1; it != start_left && value < *it; (void)it--)
     std::iter_swap(it, it + 1);
+  return ;
 }
+
+/*
+ * Assumes that *start_right < *start_left_out < *end_right
+ * Assumes that *start_left_out  < *end_right  < *end_left
+ *  - This implies that *end_left > *start_right_out
+ *    and that [start_left_out, end_left] contains at least 2 elements.
+ *
+ * This function will swap *start_left_out with *start_right and then
+ *  rearrange elements so that [start_right, end_right] is
+ *  non-decreasing.
+ * After this function finishes, length_left_out will have been decreased
+ *  by at least 1, call this difference D, and start_left_out would have
+ *  been advanced forwards D places.
+ */
+template<class BidirectionalIterator, class BidirectionalIterator2>
+inline void MergeTrivialCasesHelperEmplaceStartLeftAndStartRight(
+         BidirectionalIterator &start_left_out, BidirectionalIterator end_left,
+         BidirectionalIterator2 start_right, BidirectionalIterator2 end_right,
+         long &length_left_out) {
+  auto start_left  = start_left_out;
+  auto length_left = length_left_out;
+assert(*start_right     < *start_left_out);
+assert(*start_left_out  < *end_right);
+assert(*end_right       < *end_left);
+
+  std::swap(*start_left, *start_right);
+  ++start_left;
+  --length_left;
+  MergeTrivialCasesLeftLength1<BidirectionalIterator2>(start_right, end_right);
+  const auto &value_start_right = *start_right;
+  if (*start_left <= value_start_right) {
+    auto one_past_end_left = end_left;
+    ++one_past_end_left;
+    do {
+      ++start_left;
+      --length_left;
+assert(start_left != one_past_end_left); assert(length_left > 0);
+    } while (*start_left <= value_start_right);
+    //Formerly: } while (start_left != one_past_end_left &&
+    //                  *start_left <= value_start_right);
+assert(start_left != one_past_end_left); assert(length_left > 0);
+  }
+  start_left_out = start_left;
+assert(length_left < length_left_out);
+  length_left_out = length_left;
+  return ;
+}
+
+/*
+ * Assumes that *start_right < *start_left < *end_right_out
+ * Assumes that *start_left  < *end_right_out  < *end_left
+ *  - This implies that *end_left > *start_right_out
+ *    and that [start_left, end_left] contains at least 2 elements.
+ *
+ * This function will swap *end_left *end_right_out and then
+ *  rearrange elements so that [start_right, end_right_out] is
+ *  non-decreasing.
+ * After this function finishes, length_right_out will have been decreased
+ *  by at least 1, call this difference D, and end_right_out would have
+ *  been advanced backwards (i.e. left) D places.
+ */
+template<class BidirectionalIterator, class BidirectionalIterator2>
+inline void MergeTrivialCasesHelperEmplaceEndLeftAndEndRight(
+     BidirectionalIterator start_left, BidirectionalIterator  end_left,
+     BidirectionalIterator2 start_right, BidirectionalIterator2 &end_right_out,
+     long &length_right_out) {
+  auto end_right = end_right_out;
+  auto length_right = length_right_out;
+assert(*start_right   < *start_left);
+assert(*start_left    < *end_right_out);
+assert(*end_right_out < *end_left);
+
+  std::swap(*end_left, *end_right);
+  --end_right;
+  --length_right;
+  MergeTrivialCasesRightLength1<BidirectionalIterator>(start_left, end_left);
+  const auto &value_end_left = *end_left;
+  if (value_end_left <= *end_right) {
+    do {
+assert(end_right != start_right); assert(length_right > 0);
+      --end_right;
+      --length_right;
+    } while (value_end_left <= *end_right);
+    //Formerly: } while (length_right > 0 && value_end_left <= *end_right);
+assert(end_right != start_right); assert(length_right > 0);
+  }
+  end_right_out = end_right;
+assert(length_right < length_right_out);
+  length_right_out = length_right;
+  return ;
+}
+
+/*
+ * Assumes that *start_right < *start_left < *end_right_out
+ * Assumes that *start_left  < *end_right_out  < *end_left
+ *  - This implies that *end_left > *start_right_out
+ *    and that [start_left, end_left] contains at least 2 elements.
+ *
+ * This function should only be used when length_left_out is small
+ *  (e.g. <= 5)
+ */
+template<class BidirectionalIterator, class BidirectionalIterator2>
+inline void MergeTrivialCasesHelperEmplaceInsertionMergeLeftIntoRight(
+    BidirectionalIterator &start_left_out, BidirectionalIterator end_left,
+    BidirectionalIterator2 start_right, BidirectionalIterator2 end_right,
+    long &length_left_out) {
+  while (length_left_out > 1) {
+    MergeTrivialCasesHelperEmplaceStartLeftAndStartRight<BidirectionalIterator,
+           BidirectionalIterator2>(start_left_out, end_left,
+                                   start_right, end_right, length_left_out);
+  }
+assert(length_left_out == 1);//?????????
+  if (length_left_out == 1) {
+assert(start_left_out == end_right);
+    MergeTrivialCasesLeftLength1<BidirectionalIterator, BidirectionalIterator2>(
+        start_right, end_right, start_left_out);
+    --length_left_out;
+  }
+assert(length_left_out == 0);
+  return ;
+}
+
+
+/*
+ * Assumes that *start_right < *start_left < *end_right_out
+ * Assumes that *start_left  < *end_right_out  < *end_left
+ *  - This implies that *end_left > *start_right_out
+ *    and that [start_left, end_left] contains at least 2 elements.
+ *
+ * This function should only be used when length_right_out is small
+ *  (e.g. <= 5)
+ */
+template<class BidirectionalIterator, class BidirectionalIterator2>
+inline void MergeTrivialCasesHelperEmplaceInsertionMergeRightIntoLeft(
+    BidirectionalIterator start_left, BidirectionalIterator end_left,
+    BidirectionalIterator2 start_right, BidirectionalIterator2 &end_right_out,
+    long &length_right_out) {
+  while (length_right_out > 1) {
+    MergeTrivialCasesHelperEmplaceEndLeftAndEndRight<BidirectionalIterator,
+           BidirectionalIterator2>(start_left, end_left,
+                                   start_right, end_right_out, length_right_out);
+  }
+assert(length_right_out == 1);//?????????
+  if (length_right_out == 1) {
+assert(start_right == end_right_out);
+    MergeTrivialCasesRightLength1<BidirectionalIterator, BidirectionalIterator2>(
+        start_left, end_left, start_right);
+    --length_right_out;
+  }
+assert(length_right_out == 0);
+  return ;
+}
+
 
 /* Given two ranges [start_left, end_left] and [start_right, end_right], this
  *  function moves all elements in such a way that in the range
@@ -179,6 +503,10 @@ inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
   ++end_left_plus1;
   auto end_right_plus1 = end_right;
   ++end_right_plus1;
+  if (end_left_plus1 == start_right) {
+    std::rotate(start_left, start_right, end_right_plus1);
+    return ;
+  }
   if (end_left_plus1 == start_right) {
     std::rotate(start_left, start_right, end_right_plus1);
   } else {
@@ -234,13 +562,42 @@ inline void ShiftRightSideToTheRightByItsLength(RAI start_left, RAI end_left,
   return ;
 }
 
+
+constexpr long MergeTrivialCases_small_length = 5;
+/*
+ * If one of length_left or length_right is small (e.g. <= 5) then this
+ *  function will do an "insertion merge" of the smaller sequence
+ *  into the larger sequence.
+ */
+template<class BidirectionalIterator, class BidirectionalIterator2>
+inline void MergeTrivialCasesWhenOneLengthIsSmall(
+    BidirectionalIterator &start_left_out, BidirectionalIterator end_left,
+    BidirectionalIterator2 start_right, BidirectionalIterator2 &end_right_out,
+                                      long &length_left, long &length_right) {
+assert(length_left <= MergeTrivialCases_small_length
+      || length_right <= MergeTrivialCases_small_length);
+  if (length_left < length_right) {
+    MergeTrivialCasesHelperEmplaceInsertionMergeLeftIntoRight<
+                                 BidirectionalIterator, BidirectionalIterator2>(
+        start_left_out, end_left, start_right, end_right_out, length_left);
+assert(length_left == 0);
+  } else {
+    MergeTrivialCasesHelperEmplaceInsertionMergeRightIntoLeft<
+                                 BidirectionalIterator, BidirectionalIterator2>(
+        start_left_out, end_left, start_right, end_right_out, length_right);
+assert(length_right == 0);
+  }
+  return ;
+}
+
 /* This is a helper function that merges two ranges when the merge is trivial,
  *  by which it is meant that length_left <= 1 or length_right <= 1.
  */
-template<class RAI, class RAI2>
-void MergeTrivialCases(RAI start_left,  RAI end_left,
-                       RAI2 start_right, RAI2 end_right,
-                       long length_left, long length_right) {
+template<class BidirectionalIterator, class BidirectionalIterator2>
+void MergeTrivialCases(
+          BidirectionalIterator start_left,  BidirectionalIterator end_left,
+          BidirectionalIterator2 start_right, BidirectionalIterator2 end_right,
+          long length_left, long length_right) {
   if (length_left <= 0 || length_right <= 0 || *end_left <= *start_right)
     return ;
   else if (*end_right <= *start_left) {
@@ -250,22 +607,34 @@ void MergeTrivialCases(RAI start_left,  RAI end_left,
     // except that it works for ranges iterated by distinct objects.
     ShiftRightSideToTheRightByItsLength(start_left, end_left, start_right,
                                         end_right);
-  } else if (end_left == start_left) {
-    RotateLeftByExactlyOneElement<RAI2, RAI>(start_right, end_right, end_left);
-  } else {// if (start_right == end_right) {
-    RotateRightByExactlyOneElement<RAI,RAI2>(start_left, end_left, start_right);
+  }  else if (end_left == start_left) {
+    MergeTrivialCasesLeftLength1<BidirectionalIterator,
+                                      BidirectionalIterator2>(start_right,
+                                                           end_right, end_left);
+  } else if (start_right == end_right) {
+    MergeTrivialCasesRightLength1<BidirectionalIterator,
+                                      BidirectionalIterator2>(start_left,
+                                                         end_left, start_right);
+  } else {
+assert(length_left <= MergeTrivialCases_small_length
+      || length_right <= MergeTrivialCases_small_length);
+    MergeTrivialCasesWhenOneLengthIsSmall<BidirectionalIterator,
+               BidirectionalIterator2>(start_left, end_left, start_right,
+                                       end_right, length_left, length_right);
   }
   return ;
 }
 
 /* Overload of MergeTrivialCases().
  */
-template<class RAI, class RAI2>
-inline void MergeTrivialCases(RAI  start_left,  RAI end_left,
-                              RAI2 start_right, RAI2 end_right) {
+template<class BidirectionalIterator, class BidirectionalIterator2>
+inline void MergeTrivialCases(BidirectionalIterator  start_left,
+    BidirectionalIterator end_left,
+    BidirectionalIterator2 start_right, BidirectionalIterator2 end_right) {
   auto length_left  = std::distance(start_left,  end_left + 1);
   auto length_right = std::distance(start_right, end_right + 1);
-  MergeTrivialCases<RAI, RAI2>(start_left, end_left, start_right, end_right,
+  MergeTrivialCases<BidirectionalIterator, BidirectionalIterator2>(start_left,
+                    end_left, start_right, end_right,
                     length_left, length_right);
   return ;
 }
