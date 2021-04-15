@@ -4,7 +4,8 @@ This project implements a new inplace and stable recursive merge function that m
 In additional, unlike the GNU ISO C++ Library's std::__merge_without_buffer(), the two sorted sequences to be merged need NOT even be accessed by iterators of the same type.
 
 
-= Difference between the algorithms =
+
+******** Difference between the algorithms ********
 
 There are two versions of this algorithm, called MergeWithOutBuffer1() and MergeWithOutBuffer2(). 
 MergeWithOutBuffer2() often outperforms MergeWithOutBuffer1() if the sorted lists contain many repeated values. This happens, for example, if the lists contain 10,000 integers and they are all valued between 0 and 2000. Otherwise, usually either MergeWithOutBuffer1() outperforms MergeWithOutBuffer2() or there is little difference in their execution time. 
@@ -12,7 +13,8 @@ MergeWithOutBuffer2() often outperforms MergeWithOutBuffer1() if the sorted list
 Each of these two algorithms has implementations specialized according to whether the iterator is a Random Access Interator (RAI), such as std::vector, or a Bidirectional Iterator (bi). Calls to MergeWithOutBuffer1() and MergeWithOutBuffer2() will automatically select the most appropriate implementation; specifically, if the iterator is a RAI then the RAI version will be selected and otherwise the Bidirectional Iterator version will be selected.
 
 
-= Implementations of the algorithms and overview of project files =
+
+******** Implementations of the algorithms and overview of project files ********
 
 merge_without_buffer1.h       contains the implementation of MergeWithOutBuffer1() and includes example calls.
 
@@ -28,7 +30,8 @@ All of the other files in this project are used to:
 (2) time the algorithms and output relevant information (e.g. merge_time.h, time_merge_algorithms_class.h, gnu_merge_without_buffer.h, and mins_maxs_and_lambda.h). 
 
 
-= How the algorithms are timed =
+
+******** How the algorithms are timed ********
 
 The algorithms are applied to various data types (e.g. char, short, int, long, float, double, etc.) with values taken in various ranges (e.g. int values between x and y), and to various containers (e.g. std::vector, etc.), to various total lengths of data (e.g. merging lists with a combined total of 10^1 items, going up to 10^13 total items, with the total size increasing exponentially), to various lengths of individual sorted lists (e.g. it times merging sorted lists of equal sizes and also times merging sorted lists where one list many more items than the other). 
 
