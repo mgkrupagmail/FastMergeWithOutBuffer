@@ -3,7 +3,7 @@ This project implements a new inplace and stable recursive merge function that m
 
 
 
-******** Difference between the algorithms ********
+# Difference between the algorithms
 
 There are two versions of this algorithm, called `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()`. If you do not know which one to use then use `MergeWithOutBuffer1()`. 
 `MergeWithOutBuffer2()` often outperforms `MergeWithOutBuffer1()` *if* the sorted lists contain many repeated values. This happens, for example, if the two lists contain a sum total of 10,000 `int`s and all values are between `0` and `2000`. If this is _not_ the case (i.e. if few values occur repeatedly) then there is usually little difference in their execution times, although `MergeWithOutBuffer1()` may sometimes outperform `MergeWithOutBuffer2()` (because `MergeWithOutBuffer2()` performs more object comparisons, `MergeWithOutBuffer1()` is more likely to outperform if the computational cost of comparing two objects is high enough and if the two lists have enough objects that the algorithms' initialization times do not dominate their total run times). 
@@ -14,7 +14,7 @@ Each of these two algorithms has implementations specialized according to whethe
 
 
 
-******** Implementations of the algorithms and overview of project files ********
+# Implementations of the algorithms and overview of project files
 
 * `merge_without_buffer1.h`       contains the implementation of `MergeWithOutBuffer1()` and includes example calls.
 * `merge_without_buffer2.h`       contains the implementation of `MergeWithOutBuffer2()` and includes example calls.
@@ -28,7 +28,7 @@ All of the other files in this project are used to:
 
 In the future, the file `merge_without_buffer_standalone.h` will contain the primary algorithm of this project in a standalone C++ header file (i.e. no other files will be needed). 
 
-************ Overloads of the algorithms ************
+# Overloads of the algorithms
 
 There are serval overloads of `MergeWithOutBuffer1()`. There is always one overload that accepts (and another overload that does not accept) as its last argument a custom comparison operator (see https://en.cppreference.com/w/cpp/named_req/Compare for the requirements). If no custom comparison operator is passed then the default comparison operator is used. 
 
@@ -39,7 +39,7 @@ Everything that has just been said about `MergeWithOutBuffer1()`'s overloads can
 
 
 
-******** How the algorithms are timed ********
+# How the algorithms are timed
 
 The algorithms are applied to:
 
