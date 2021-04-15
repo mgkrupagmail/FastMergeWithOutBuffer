@@ -45,7 +45,7 @@ The algorithms are applied to:
 
 1. various data types (e.g. `char`, `short`, `int`, `long`, `float`, `double`, `std::string`, etc.) 
 2. with values taken in various ranges (e.g. `int` values between some `x` and `y`), and to 
-3. various containers (e.g. `std::vector`, etc.), and to 
+3. various containers (specifically, `std::vector`, `std::deque`, and `std::list`), and to 
 4. various total lengths of data (e.g. merging lists with a combined total size of (`some_constant` multipled by) c^1, c^2, c^2, ..., c^20, ..., or more items, where `c` is a float constant (such as `c=1.7l` or `c=2`); here the total size increases exponentially), and to 
 5. various lengths of individual sorted lists (e.g. it times merging sorted lists of equal sizes and also times merging sorted lists where one list has an order of magnitude more items than the other list). 
 
