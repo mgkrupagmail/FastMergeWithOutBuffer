@@ -1,1174 +1,200 @@
 /*
- * merge_without_buffer1.h
+ * merge_without_buffer.h
  *
- *  Created on: Jan 9, 2020
+ *  Created on: Jun 29, 2017
  *      Author: Matthew Gregory Krupa
- *   Copyright: Metthew Gregory Krupa
+ *
+ *  The most important function defined in this file is MergeWithOutBuffer().
+ *  MergeWithOutBufferTrim1() contains the near minimum code needed to make the
+ *   merge algorithm work.
  */
 
-#ifndef SRC_MERGE_WITHOUT_BUFFER1_H_
-#define SRC_MERGE_WITHOUT_BUFFER1_H_
-
-
-#include <algorithm>
-#include <functional>
-//functional is included to allow for the use of std::less<>
-#include <iomanip>
-#include <iostream>
-#include <iterator>
-#include <type_traits>
-
-#include "merge_without_buffer_common.h"
-
-/* EXAMPLE CALLS:
-
-  {
-  //One vector stores two sorted lists that are then merged into a single sorted vector.
-  //That is, after the call is finished, vec will be sorted.
-
-  int length_left = 8, length_right = 11;
-  std::vector<int> vec({ 1, 2, 3, 4, 4, 5, 9, 9, 0, 0, 1, 3, 5, 5, 6, 7, 9, 10, 10 });
-
-  auto start_left         = vec.begin();
-  auto start_right        = start_left + length_left;
-  auto one_past_end_right = vec.end();
-
-  //Default comparison is used
-  MergeWithOutBuffer1<std::vector<int>::iterator>(start_left,
-                                                  start_right,
-                                                  one_past_end_right);
-
-  //Custom comparison is used
-  auto comp = std::less<int>();
-  MergeWithOutBuffer1<std::vector<int>::iterator>(start_left,
-                                                  start_right,
-                                                  one_past_end_right,
-                                                  comp);
-
-  }
-
-  {
-  //Two different sorted vectors are merged so that
-  // vec_left + vec_right becomes sorted. That is, after the call is finished,
-  // the last element of vec_left will be <= the first element of vec_right, and
-  // both vec_left and vec_right will be sorted.
-
-  std::vector<int> vec_left({ 1, 2, 3, 4, 4, 5, 9, 9 });
-  std::vector<int> vec_right({ 0, 0, 1, 3, 5, 5, 6, 7, 9, 10, 10 });
-  auto start_left         = vec_left.begin();
-  auto one_past_end_left  = vec_right.end();
-  auto start_right        = vec_right.begin();
-  auto one_past_end_right = vec_right.end();
-
-  auto comp = std::less<int>();
-
-  //OPTION 1:
-  //Default comparison is used
-  MergeWithOutBuffer1<std::vector<int>::iterator>(start_left,
-		                                          one_past_end_left,
-                                                  start_right,
-                                                  one_past_end_right);
-
-  //Custom comparison is used
-  MergeWithOutBuffer1<std::vector<int>::iterator>(start_left,
-												  one_past_end_left,
-												  start_right,
-                                                  one_past_end_right,
-                                                  comp);
-
-  //OPTION 2:
-
-  auto length_left  = vec_left.size();
-  auto length_right = vec_right.size();
-
-  //Default comparison is used
-  MergeWithOutBuffer1<std::vector<int>::iterator>(start_left,
-                                                  start_right,
-                                                  one_past_end_right,
-                                                  length_left,
-                                                  length_right);
-
-  //Custom comparison is used
-  MergeWithOutBuffer1<std::vector<int>::iterator>(start_left,
-                                                  start_right,
-                                                  one_past_end_right,
-                                                  length_left,
-                                                  length_right,
-                                                  comp);
-
-  }
+/*
+ * Note that comp(x, y) is assumed to be a strict weak ordering.
+ * (See https://en.wikipedia.org/wiki/Weak_ordering#Strict_weak_orderings )
+ * This means that for all x, y, z:
+ * (1) comp(x, x) is false,
+ * (2) if comp(x, y) then !comp(y, x),
+ * (3) if comp(x, y) and comp(y, z) then comp(x, z), and
+ * (4) in addition, any of the following equivalent conditions hold:
+ *   (4a) (transitivity of incomparability) if x is incomparable with y
+ *        (i.e. neither x < y nor y < x is true), and y is incomparable with z,
+ *        then x is incomparable with z.
+ *   (4b) If x < y, then for all z, either x < z or z < y or both.
+ *   (4c) If x is incomparable with y, then for all z != x, z != y,
+ *         either (x < z and y < z) or (z < x and z < y) or
+ *         (z is incomparable with x and z is incomparable with y).
+ *
+ * Theorem: Define the complement of comp() as C(x, y) := !comp(y, x).
+ * Then C(x, y) is a total pre-order. In particular, C(x, y) is transitive.
+ *
+ * Note that for all x, y, z,
+ * (5) if comp(x, y) and !comp(z, y) (i.e. y <= z) then comp(x, z) (i.e. x < z).
+ *     (Proof: Since comp(x, y), using (4b) gives us either comp(x, z), or
+ *      comp(z, y), or both. Since !comp(z, y) we must have comp(x, z),
+ *      as desired Q.E.D.).
+ * (6) if !comp(y, x) (i.e. x <= y) and comp(y, z) then comp(x, z) (i.e. x < z).
+ *     (Proof: Since comp(y, z), using (4b) gives us either comp(y, x), or
+ *      comp(x, z), or both. Since !comp(y, x) we must have comp(x, z),
+ *      as desired Q.E.D.).
+ *
+ * Note that a range [start, end] is sorted with respect to comp() if and only
+ *  if for all iterators it in [start, end] such that it + 1 is also an iterator
+ *  defined in [start, end], comp(*(it+1), *it) is FALSE (i.e.
+ *  C(*it, *(it+1)) is true).
+ * See https://stackoverflow.com/a/59348418/7366867
+ *  for the reason why this is true.
+ *
+ * Suppose that [start, end] is sorted. *
+ * (7) if v is such that comp(*end, v) then for all iterators it in
+ *     [start, end], comp(*it, v).
+ *
+ *     (Proof: Clearly this is true if it == end, so assume that it != end.
+ *      Using (4b) with x = *end, y = v, and z = *it, gives us that either
+ *       comp(*end, *it), comp(*it, v), or both. Since [start, end] is
+ *       sorted, we have !comp(*end, *it) so we must have comp(*it, v),
+ *       as desired. Q.E.D.)
+ *
+ * (8) if v is such that comp(v, *start) then for all iterators it in
+ *     [start, end], comp(v, *it).
+ *
+ *     (Proof: Clearly this is true if it == start, so assume that it != start.
+ *      Using (4b) with x = v, y = *start, and z = *it gives us that either
+ *       comp(v, *it), comp(*it, *start), or both. Since [start, end] is
+ *       sorted, we have !comp(*it, *start) so we must have comp(v, *it),
+ *       as desired. Q.E.D.)
+ *
+ * (9) if v is such that !comp(v, *end) (i.e. *end <= v) then for all
+ *     iterators it in [start, end], !comp(v, *it) (i.e. *it <= v).
+ *
+ *     (Proof: If it == end then the conclusion is immediate.
+ *      So assume WLOG that it != end. Note that if v == *end then the
+ *      desired conclusion is immediate, so assume that v != *end.
+ *      If comp(*end, v) then by (2) above we have comp(*it, v) so that
+ *      !comp(v, *it), as desired. So assume that !comp(*end, v).
+ *      Thus v and *end are incomparable.
+ *      Suppose from the sake of contradiction that comp(v, *it).
+ *      Using (4b) with x = v, y = *it, and z = *end, we must have either
+ *      comp(v, *end), or comp(*end, *it), or both. Since !comp(*end, v),
+ *      it follows that comp(*end, *it). But this contradicts the fact that
+ *      [start, end] is sorted. Thus we must have !comp(v, *it). Q.E.D.)
+ *
+ * (10) if v is such that !comp(*start, v) (i.e. v <= *start) then for all
+ *     iterators it in [start, end], !comp(*it, v) (i.e. v <= *it).
+ *
+ *     (Proof: If it == start then the conclusion is immediate.
+ *      So assume WLOG that it != start. Note that if v == *start then the
+ *      desired conclusion is immediate, so assume that v != *start.
+ *      If comp(v, *start) then by (3) above we have comp(v, *it) so that
+ *      !comp(*it, v), as desired. So assume that !comp(v, *start).
+ *      Thus v and *start are incomparable.
+ *      Suppose from the sake of contradiction that comp(*it, v).
+ *      Using (4b) with x = *it, y = v, and z = *start, we must have either
+ *      comp(*it, *start), or comp(*start, v), or both. Since !comp(*start, v),
+ *      it follows that comp(*it, *start). But this contradicts the fact that
+ *      [start, end] is sorted. Thus we must have !comp(*it, v). Q.E.D.)
+ *
+ *
+ * Suppose that [start, end] is sorted and that
+ * !comp(*start, *end) (i.e. if *end <= *start). Then:
+ * (11) for all iterators it in [start, end],
+ *     !comp(*start, *it) and !comp(*it, *end)
+ *     (i.e. *end <= *it and *it <= *start).
+ *
+ *     (Proof: Note that if it == start or it == end then this is immediate, so
+ *      suppose that it != start and it != end. Suppose that comp(*start, *it).
+ *      Then by letting z := end in (4b) we have either comp(*start, *end),
+ *       or comp(*end, *it), or both. Since [start, end] is sorted,
+ *       comp(*end, *it) is impossible so that we must have comp(*start, *end),
+ *       but then this contradicts the assumption that !comp(*start, *end).
+ *       Thus we must have !comp(*start, *it).
+ *      Now suppose for the sake of contradiction that comp(*it, *end).
+ *      Then by letting z := start in (4b) we have either comp(*it, *start), or
+ *       comp(*start, *end), or both. By assumption, !comp(*start, *end) so
+ *       that we must have comp(*it, *start), but then this contradicts
+ *       the fast that [start, end] is sorted. Thus we must have
+ *       !comp(*it, *end). Q.E.D.)
+ *
+ * (12) for any x, comp(*start, x) if and only if comp(*end, x).
+ *      (Proof: (<=) follows from comp(*end, x) and (6) above.
+ *       (=>) follows from comp(*start, x) and (6) above. Q.E.D.)
+ *
+ * (13) for any x, comp(x, *start) if and only if comp(x, *end).
+ *      (Proof: (<=) follows from comp(x, *end) and (6) above.
+ *       (=>) follows from comp(x, *start) and (6) above. Q.E.D.)
+ *
+ * (14) for any x, !comp(x, *start) (i.e. *start <= x) if and only if
+ *       !comp(x, *end) (i.e. *end <= x).
+ *      (Proof: This follows from the transitivity of the complement of comp().)
+ *
+ * (15) for any x, !comp(*start, x) (i.e. x <= *start) if and only if
+ *       !comp(*end, x) (i.e. x <= *end).
+ *      (Proof: This follows from the transitivity of the complement of comp().)
+ *
+ * Suppose that start < start_right <= end, let end_left := start_right - 1,
+ *  and suppose that all of the following hold:
+ *  (I)   [start, start_right) is sorted,
+ *  (II)  [start_right, end]   is sorted,
+ *  (III) comp(*start_right, *end_left),
+ *  (IV)  comp(*start_right, *start_left), and
+ *  (V)   comp(*end, *end_left)
+ * Let it_right be the largest iterator in [start_right, end] such that
+ *  comp(*start, *it_right).
+ * Let it_left be the smallest iterator in [start, start_right) such that
+ *  comp(*it_left, *end).
+ * Then,
+ *  (1) if !comp(*start_right, *end) (i.e. if *end <= *start_right)) then
  */
 
-namespace merge_without_buffer_1_namespace {
+//NOTE: To increase the speed of code, remove ASSERT()s.
 
-//Assumes that:
-// (1) length_left > 0 and length_right > 0, where
-//      length_left  == std::distance(start_left,  start_right) and
-//      length_right == std::distance(start_right, one_past_end)
-// (2) comp(*start_right, *end_left), where end_left == start_right - 1
-// (3) If is_left_trimmed == true  then comp(*start_right, *start_left)
-// (4) If is_left_trimmed == false then comp(*end_right,   *end_left)
-//
-// Returns true if and only if the two non-decreasing sequences have been
-//  merged, in which case the values of start_left_out, start_right_out, and
-//  one_past_end_out would not have been changed.
+#ifndef MERGE_WITHOUT_BUFFER_H_
+#define MERGE_WITHOUT_BUFFER_H_
 
-//If this function returns false, then after execution finishes:
-// (1) start_left_out (resp. start_right_out, one_past_end_out) would have
-//     been replaced by the local variable start_left (resp. start_right,
-//     one_past_end).
-// (2) length_left_out > 1 and length_right_out > 1, and
-//      length_left_out  == std::distance(start_left,  start_right) and
-//      length_right_out == std::distance(start_right, one_past_end)
-// (3) comp(*start_right, *end_left), where end_left == start_right - 1
-// (4) comp(*start_right, *start_left)
-// (5) comp(*end_left, *end_right)
-// (6) comp(*start_left, *end_right)
-// (7) comp(*(start_right + 1), *start_left), and
-// (8) comp(*end_right, *(end_left - 1))
+#include "merge_without_buffer2.h"
 
-enum ThreeValue {
-  Unknown = -1,
-  False,
-  True
-};
-
-//In what follows, all assert()s would evaluate to true if they were to be
-// called.
-template<typename RandomAccessIterator, typename Compare,
-         typename Distance, typename CompareLessOrEqual, typename ValueType>
-inline bool Trim1_switch_RAI(RandomAccessIterator &start_left_out,
-                             RandomAccessIterator &start_right_out,
-                             RandomAccessIterator &one_past_end_out,
-                             Distance &length_left_out,
-                             Distance &length_right_out,
-                             Compare comp,
-                             CompareLessOrEqual comp_le,
-                             ThreeValue is_startleft_less_or_equal_to_startright,
-                             ThreeValue is_endleft_less_or_equal_to_endright) {
-  auto start_left   = start_left_out;
-  auto start_right  = start_right_out;
-  auto one_past_end = one_past_end_out;
-  auto end_left     = start_right - 1;
-  auto end_right    = one_past_end - 1;
-  auto length_left  = length_left_out;
-  auto length_right = length_right_out;
-  //Meaning of the following variables (using
-  // is_endleft_less_or_equal_to_endright as an example):
-  // (< 0)  if (is_endleft_less_or_equal_to_endright < 0) then it is unknown
-  //        whether or not comp_le(*end_left, *end_right) is true.
-  // (== 0) if (is_endleft_less_or_equal_to_endright == 0) then
-  //        comp_le(*end_left, *end_right) is false.
-  // (> 0)  if (is_endleft_less_or_equal_to_endright > 0) then
-  //        comp_le(*end_left, *end_right) is true.
-
-  //The following are true:
-  //assert(length_left > 0 && length_right > 0);
-  //if (is_startleft_less_or_equal_to_startright >= 0) then
-  //    is_startleft_less_or_equal_to_startright ==
-  //                                          comp_le(*start_left, *start_right)
-  //if (is_endleft_less_or_equal_to_endright >= 0) then
-  //    is_endleft_less_or_equal_to_endright == comp_le(*end_left, *end_right)
-  if (is_startleft_less_or_equal_to_startright < ThreeValue::False)
-    is_startleft_less_or_equal_to_startright =
-                    static_cast<ThreeValue>(comp_le(*start_left, *start_right));
-  if (is_startleft_less_or_equal_to_startright < ThreeValue::False)
-    is_endleft_less_or_equal_to_endright =
-                        static_cast<ThreeValue>(comp_le(*end_left, *end_right));
-
-  enum SwitchLabels {
-    startleft_le_startright = 0, //"le" stands for "less than or equal to"
-    endleft_le_endright,
-    length_dispatch,
-    length_left_less_than_length_right,
-    length_right_less_than_length_left,
-    length_left_equal_to_length_right,
-    trivial_case_length_left_equals_1,
-    trivial_case_length_right_equals_1,
-    trivial_case_endright_le_startleft
-  };
-  SwitchLabels jump_to = static_cast<SwitchLabels>(0);
-  while (true) {
-    //assert(length_left > 0 && length_right > 0);
-    //assert(comp(*start_right, *end_left));
-    switch (jump_to) {
-      case SwitchLabels::startleft_le_startright: {
-        if (is_startleft_less_or_equal_to_startright != 0) {
-          //assert(is_endleft_less_or_equal_to_endright == 0);
-          //if (is_startleft_less_or_equal_to_startright > 0)
-          //    assert(comp_le(*start_left, *start_right));
-          if (is_startleft_less_or_equal_to_startright > 0 ||
-              comp_le(*start_left, *start_right)) {
-            //assert(length_left > 1);
-            mwob_namespace::TrimLeft1_RAI<RandomAccessIterator, Compare,
-                                       Distance, CompareLessOrEqual, ValueType>(
-                                           start_left, end_left, *start_right,
-                                           length_left, comp, comp_le);
-            if (length_left <= 1) {
-              jump_to = SwitchLabels::trivial_case_length_left_equals_1;
-              continue ;
-            }
-          }
-          is_startleft_less_or_equal_to_startright = ThreeValue::False;
-        }
-        if (length_right <= 1) {
-          jump_to = SwitchLabels::trivial_case_length_right_equals_1;
-          continue ;
-        }
-        [[fallthrough]];
-      }
-
-      case SwitchLabels::endleft_le_endright: {
-        if (is_endleft_less_or_equal_to_endright != ThreeValue::False) {
-          //assert(is_startleft_less_or_equal_to_startright == ThreeValue::False);
-          //if (is_endleft_less_or_equal_to_endright > 0)
-          //    assert(comp_le(*end_left, *end_right));
-          if (is_endleft_less_or_equal_to_endright > 0 || comp_le(*end_left, *end_right)) {
-            //assert(length_right > 1);
-            mwob_namespace::TrimRight1_RAI<RandomAccessIterator, Compare,
-                                       Distance, CompareLessOrEqual, ValueType>(
-                                     *end_left, start_right, end_right,
-                                     one_past_end, length_right, comp, comp_le);
-            if (length_right <= 1) {
-              jump_to = SwitchLabels::trivial_case_length_right_equals_1;
-              continue ;
-            }
-          }
-          is_endleft_less_or_equal_to_endright = ThreeValue::False;
-        }
-        if (length_left <= 1) {
-          jump_to = SwitchLabels::trivial_case_length_left_equals_1;
-          continue ;
-        }
-        [[fallthrough]];
-      }
-
-      case SwitchLabels::length_dispatch: {
-        //assert(length_left > 1 && length_right > 1);
-        //assert(length_left  == std::distance(start_left,  end_left)  + 1);
-        //assert(length_right == std::distance(start_right, end_right) + 1);
-        //assert(one_past_end == end_right + 1 && start_right == end_left + 1);
-        //assert(comp(*start_right, *start_left));
-        //assert(comp(*(start_right + 1), *start_left));
-        //assert(comp(*end_right, *(end_left - 1)));
-        //assert(std::is_sorted(start_left, start_right, comp));
-        //assert(std::is_sorted(start_right, one_past_end, comp));
-        //assert(is_startleft_less_or_equal_to_startright_plus1 ==
-        //                            comp_le(*start_left, *(start_right + 1)));
-        //assert(is_endleft_minus1_less_or_equal_to_endright ==
-        //                                comp_le(*(end_left - 1), *end_right));
-        if (length_left >= length_right) {
-          jump_to = static_cast<SwitchLabels>(
-                    SwitchLabels::length_right_less_than_length_left
-                     + static_cast<unsigned char>(length_left == length_right));
-          continue ;
-        }
-        [[fallthrough]];
-      }
-
-      case SwitchLabels::length_left_less_than_length_right: {
-        //assert(length_left < length_right);
-        RandomAccessIterator symmetric_point_right;
-        if (comp(*(symmetric_point_right = end_left + length_left), *start_left)) {
-          //assert(!comp_le(*(end_left - 1), *end_right));
-          bool is_left_length_less_than_right_length;
-          do {
-            //assert(length_left > 1 && length_right > 1);
-            std::swap_ranges(start_left, start_right, start_right);
-            start_left    = start_right;
-            end_left      = symmetric_point_right;
-            start_right   = symmetric_point_right + 1;
-            length_right -= length_left;
-            //assert(length_left > 1 && end_left != start_left);
-            //assert(comp(*end_right, *end_left));
-            //assert(!comp_le(*(end_left - 1), *end_right));
-            //Note if length_right <= 1 then is_left_length_less_than_right_length
-            // below is false.
-          } while ((is_left_length_less_than_right_length = (length_left < length_right))
-              && comp(*(symmetric_point_right = end_left + length_left), *start_left));
-          is_startleft_less_or_equal_to_startright
-                  = static_cast<ThreeValue>(comp_le(*start_left, *start_right));
-          //assert(length_left > 1 && end_left != start_left);
-          //assert(!comp_le(*end_left, *end_right));
-          //assert(!comp_le(*(end_left - 1), *end_right));
-          //assert(comp(*start_right, *end_left));
-          if (is_startleft_less_or_equal_to_startright) {
-            jump_to = SwitchLabels::startleft_le_startright;
-            continue ;
-          } else if (length_right <= 1) {
-            jump_to = SwitchLabels::trivial_case_length_right_equals_1;
-            continue ;
-          } else if (comp_le(*end_right, *start_left)) {
-            jump_to = SwitchLabels::trivial_case_endright_le_startleft;
-            continue ;
-          } else if (!is_left_length_less_than_right_length) {
-            //assert(length_left >= length_right);
-            jump_to = static_cast<SwitchLabels>(
-                               SwitchLabels::length_right_less_than_length_left
-                                + (length_left == length_right));
-            continue ;
-          }
-          //assert(comp(*end_right, *(end_left - 1)));
-        }
-  //assert(start_right != end_right && start_right != one_past_end);
-        break ;
-      }
-
-      case SwitchLabels::length_right_less_than_length_left: {
-        //assert(length_left > length_right && length_right > 0);
-        //assert(start_right == end_left + 1);
-        RandomAccessIterator symmetric_point_left;
-        if (comp(*end_right, *(symmetric_point_left = start_right - length_right))) {
-          bool is_right_length_less_than_left;
-          do {
-            //assert(length_left > 1 && length_right > 1);
-            //assert(one_past_end == end_right + 1);
-            std::swap_ranges(start_right, one_past_end, symmetric_point_left);
-            one_past_end = start_right;
-            end_right    = one_past_end - 1;
-            start_right  = symmetric_point_left; //= end_left + 1;
-            //assert((end_left - length_right) == symmetric_point_left - 1);
-            end_left     = symmetric_point_left - 1;
-            length_left -= length_right;
-            //assert(length_left > 0 && length_right > 1);
-            //assert(comp(*start_right, *start_left));
-            //assert(start_right != end_right && start_right != one_past_end);
-            //assert(!comp_le(*start_left, *(start_right + 1)));
-            //Note: if length_left <= 1 then is_right_less_than_left below
-            // is false.
-          } while ((is_right_length_less_than_left = (length_left > length_right)) &&
-             comp(*end_right, *(symmetric_point_left = start_right - length_right)));
-          is_endleft_less_or_equal_to_endright
-                      = static_cast<ThreeValue>(comp_le(*end_left, *end_right));
-          //assert(length_right > 1);
-          //assert(start_right != end_right && start_right != one_past_end);
-          //assert(!comp_le(*start_left, *start_right));
-          //assert(!comp_le(*start_left, *(start_right + 1)));
-          //assert(comp(*start_right, *end_left));
-          if (is_endleft_less_or_equal_to_endright) {
-            jump_to = SwitchLabels::endleft_le_endright;
-            continue ;
-          } else if (length_left <= 1) {
-            jump_to = SwitchLabels::trivial_case_length_left_equals_1;
-            continue ;
-          } else if (comp_le(*end_right, *start_left)) {
-            jump_to = SwitchLabels::trivial_case_endright_le_startleft;
-            continue ;
-          } else if (!is_right_length_less_than_left) {
-            //assert(length_left <= length_right);
-            //assert(!comp_le(*end_right, *start_left));
-            jump_to = static_cast<SwitchLabels>(
-                 SwitchLabels::length_left_less_than_length_right
-               + (2 * static_cast<unsigned char>(length_left == length_right)));
-            continue ;
-          }
-          //assert(comp(*(start_right + 1), *start_left));
-        }
-        break ;
-      }
-
-      case SwitchLabels::length_left_equal_to_length_right: {
-        //assert(length_left == length_right);
-        if (comp_le(*end_right, *start_left)) {
-          jump_to = SwitchLabels::trivial_case_endright_le_startleft;
-          continue ;
-        }
-        break ;
-      }
-
-      case SwitchLabels::trivial_case_length_left_equals_1: {
-        //assert(length_left == 1 && start_left == end_left);
-        //assert(start_left != start_right && start_right != one_past_end);
-        if (length_right == 1) {
-          std::iter_swap(start_left, start_right);
-          //assert(std::is_sorted(start_left, one_past_end, comp));
-          return true;
-        }
-        mwob_namespace::RotateLeftBy1<RandomAccessIterator, Distance>(
-                                                      start_left, one_past_end);
-        //assert(std::is_sorted(start_left, one_past_end, comp));
-        return true;
-      }
-
-      case SwitchLabels::trivial_case_length_right_equals_1: {
-        //assert(length_right == 1 && start_right == end_right);
-        mwob_namespace::RotateRightBy1<RandomAccessIterator, Distance>(
-                                            start_left, end_right, length_left);
-        //assert(std::is_sorted(start_left, one_past_end, comp));
-        return true;
-      }
-
-      case SwitchLabels::trivial_case_endright_le_startleft: {
-        if (comp(*end_right, *start_left)) {
-          std::rotate(start_left, start_right, one_past_end);
-          //assert(std::is_sorted(start_left, one_past_end, comp));
-          return true;
-        }
-        //if (comp_le(*end_right, *start_left)) {
-        //Assumes that:
-        // (1) comp_le(*start_left, *end_right)
-        // (2) comp_le(*end_right, *start_left)
-        //     so in particular, *start_left and *end_right are equivalent under comp().
-        // (3) comp(*start_right, *start_left)
-        // (4) comp(*end_right, *end_left)
-        // (5) start_left != end_left (or equivalently, length_left > 1)
-        // (6) start_right != end_right (or equivalently, length_right > 1)
-        // These imply that:
-        // (A) comp(*start_right, *end_left)
-        // (B) comp(*start_left, *end_right)
-        //assert(length_right > 1 && length_left > 1);
-        //assert(start_right != end_right && start_left != end_left);
-        //assert(comp_le(*end_right, *start_left));
-        //assert(comp_le(*start_left, *end_right));
-        //assert(comp(*start_left, *end_left));
-        //assert(comp(*start_right, *end_right));
-        auto first_greater_than = mwob_namespace::SmallestIteratorGreaterThan_KnownToExist_RAI<
-           RandomAccessIterator, Compare, Distance, CompareLessOrEqual, ValueType>(
-           start_left + 1, end_left, start_right, *start_left, comp, comp_le,
-           false //check_start_iterator_each_iteration
-           );
-        auto num_const_left  = std::distance(start_left, first_greater_than);
-        auto last_less_than = mwob_namespace::LargestIteratorLessThan_KnownToExist_RAI<
-           RandomAccessIterator, Compare, Distance, CompareLessOrEqual, ValueType>(
-           start_right, end_right - 1, end_right, *start_left, comp, comp_le,
-           false //check_end_iterator_each_iteration
-           );
-
-        auto num_const_right = std::distance(last_less_than, end_right);
-        //In this comment, let end_right_value = *end_right and let
-        // start_left_value = *start_left. Note that
-        // comp_le(end_right_value, start_left_value) and
-        // comp_le(start_left_value, end_right_value) (i.e. start_left_value
-        // and end_right_value are equivalent under comp).
-        //
-        //After the following std::rotate() is executed, the value end_right_value
-        // will be to the LEFT of the value start_left_value, which means that
-        // the merge would not be stable. We correct this by performing another
-        // std::rotate of all values that are equivalent to end_right_value
-        auto location_of_old_start_left
-                           = std::rotate(start_left, start_right, one_past_end);
-        //assert(std::is_sorted(start_left, one_past_end, comp));
-        std::rotate(location_of_old_start_left - num_const_right,//leftmost value
-                                                 //equivalent to end_right_value
-                   location_of_old_start_left,
-                   location_of_old_start_left + num_const_left); //one past
-                                 //rightmost value equivalent to end_right_value
-
-        //assert(std::is_sorted(start_left, one_past_end, comp));
-        return true;
-      } //End case
-    } //End switch()
-    break ;
-  } //END while (true)
-  //assert(start_right == end_left + 1);
-  //assert(length_left  == std::distance(start_left, end_left) + 1);
-  //assert(length_right == std::distance(start_right, end_right) + 1);
-  //assert(length_left > 1 && length_right > 1);
-  //assert(comp(*end_right, *(end_left - 1)));
-  //assert(comp(*(start_right + 1), *start_left));
-  start_left_out   = start_left;
-  start_right_out  = start_right;
-  one_past_end_out = end_right + 1;
-  length_left_out  = length_left;
-  length_right_out = length_right;
-  return false; //The two non-decreasing sequences are not yet merged.
-}
-
-//This is Trim2 designed for Bidirectional Iterators.
-//Since computing std::distance() is potentially expensive, we keep track
-// of length_left and length_right.
-//
-//In what follows, all assert()s would evaluate to true if they were to be
-// called.
-//Due to the similarity between Trim1_switch_bi() and Trim1_switch_RAI(),
-// assert()s and comments that appear in Trim2_switch_RAI() and
-// would be repeated in Trim1_switch_bi() are instead omitted
-// from Trim1_switch_bi().
-template<typename BidirectionalIterator, typename Compare,
-         typename Distance, typename CompareLessOrEqual, typename ValueType>
-inline bool Trim1_switch_bi(BidirectionalIterator &start_left_out,
-                            BidirectionalIterator &start_right_out,
-                            BidirectionalIterator &one_past_end_out,
-                            Distance &length_left_out,
-                            Distance &length_right_out,
-                            Distance &d_out,
-                            BidirectionalIterator &start_2nd_quarter_out,
-                            BidirectionalIterator &start_4th_quarter_out,
-                            Compare comp,
-                            CompareLessOrEqual comp_le,
-                            ThreeValue is_startleft_less_or_equal_to_startright,
-                            ThreeValue is_endleft_less_or_equal_to_endright) {
-  auto start_left   = start_left_out;
-  auto start_right  = start_right_out;
-  auto one_past_end = one_past_end_out;
-  auto end_left     = start_right;
-  (void)--end_left;
-  auto end_right    = one_past_end;
-  (void)--end_right;
-  auto length_left  = length_left_out;
-  auto length_right = length_right_out;
-  auto start_right_plus1 = start_right;
-  (void)++start_right_plus1;
-  auto end_left_minus1 = end_left;
-  (void)--end_left_minus1;
-  if (is_startleft_less_or_equal_to_startright < ThreeValue::False)
-    is_startleft_less_or_equal_to_startright
-                  = static_cast<ThreeValue>(comp_le(*start_left, *start_right));
-  if (is_endleft_less_or_equal_to_endright < ThreeValue::False)
-    is_endleft_less_or_equal_to_endright
-                      = static_cast<ThreeValue>(comp_le(*end_left, *end_right));
-  enum SwitchLabels {
-    startleft_le_startright = 0, //"le" stands for "less than or equal to"
-    endleft_le_endright,
-    length_dispatch,
-    length_left_less_than_length_right,
-    length_right_less_than_length_left,
-    length_left_equal_to_length_right,
-    trivial_case_length_left_equals_1,
-    trivial_case_length_right_equals_1,
-    trivial_case_endright_le_startleft
-  };
-  BidirectionalIterator symmetric_point_left, symmetric_point_right;
-  Distance distance_to_symmetric_point;
-  SwitchLabels jump_to = static_cast<SwitchLabels>(0);
-
-  while (true) {
-    switch (jump_to) {
-      case SwitchLabels::startleft_le_startright: {
-        if (is_startleft_less_or_equal_to_startright != 0) {
-          if (is_startleft_less_or_equal_to_startright > 0 ||
-              comp_le(*start_left, *start_right)) {
-            mwob_namespace::TrimLeft1_bi<BidirectionalIterator, Compare,
-                                       Distance, CompareLessOrEqual, ValueType>(
-                                       start_left, end_left, start_right,
-                                       length_left, comp, comp_le, true);
-            if (length_left <= 1) {
-              jump_to = SwitchLabels::trivial_case_length_left_equals_1;
-              continue ;
-            }
-          }
-        }
-        is_startleft_less_or_equal_to_startright = ThreeValue::False;
-        if (length_right <= 1) {
-          jump_to = SwitchLabels::trivial_case_length_right_equals_1;
-          continue ;
-        }
-      }
-      [[fallthrough]];
-
-      case SwitchLabels::endleft_le_endright: {
-        if (is_endleft_less_or_equal_to_endright != ThreeValue::False) {
-          if (is_endleft_less_or_equal_to_endright > 0 ||
-              comp_le(*end_left, *end_right)) {
-            mwob_namespace::TrimRight1_bi<BidirectionalIterator, Compare,
-                                       Distance, CompareLessOrEqual, ValueType>(
-                                *end_left, start_right, end_right, one_past_end,
-                           length_right, comp, comp_le, true);
-            if (length_right <= 1) {
-              jump_to = SwitchLabels::trivial_case_length_right_equals_1;
-              continue ;
-            }
-          }
-        } else {  }
-        is_endleft_less_or_equal_to_endright = ThreeValue::False;
-        if (length_left <= 1) {
-          jump_to = SwitchLabels::trivial_case_length_left_equals_1;
-          continue ;
-        }
-      }
-      [[fallthrough]];
-
-      case SwitchLabels::length_dispatch: {
-        //assert(end_left_minus1 == end_left - 1);
-        if (length_left >= length_right) {
-          jump_to = static_cast<SwitchLabels>(SwitchLabels::length_right_less_than_length_left
-                                               + (length_left == length_right));
-          continue ;
-        }
-        [[fallthrough]];
-      }
-
-      case SwitchLabels::length_left_less_than_length_right: {
-      symmetric_point_right = end_left;
-      std::advance(symmetric_point_right, length_left);
-        if (comp(*symmetric_point_right, *start_left)) {
-          bool is_left_length_less_than_right_length;
-          do {
-            std::swap_ranges(start_left, start_right, start_right);
-            start_left    = start_right;
-            end_left      = symmetric_point_right;
-            start_right   = symmetric_point_right;
-            (void)++start_right;
-            length_right -= length_left;
-            if (!(is_left_length_less_than_right_length = (length_left < length_right)))
-              break ;
-            symmetric_point_right = end_left;
-            std::advance(symmetric_point_right, length_left);
-            //Note if length_right <= 1 then is_left_length_less_than_right_length
-            // below is false.
-          } while (comp(*symmetric_point_right, *start_left));
-          is_startleft_less_or_equal_to_startright
-                  = static_cast<ThreeValue>(comp_le(*start_left, *start_right));
-
-          end_left_minus1 = end_left;
-          (void)--end_left_minus1;
-          bool is_length_right_less_or_equal_to_1 = (length_right <= 1);
-          if (!is_length_right_less_or_equal_to_1) {
-            start_right_plus1 = start_right;
-            (void)++start_right_plus1;
-          }
-          if (is_startleft_less_or_equal_to_startright) {
-            jump_to = SwitchLabels::startleft_le_startright;
-            continue ;
-          } else if (length_right <= 1) {
-            jump_to = SwitchLabels::trivial_case_length_right_equals_1;
-            continue ;
-          } else if (comp_le(*end_right, *start_left)) {
-            jump_to = SwitchLabels::trivial_case_endright_le_startleft;
-            continue ;
-          } else if (!is_left_length_less_than_right_length) {
-            jump_to = static_cast<SwitchLabels>(
-                              SwitchLabels::length_right_less_than_length_left
-                              + (length_left == length_right));
-            continue ;
-          }
-        }
-        symmetric_point_left = start_left;
-        distance_to_symmetric_point = length_left;
-        break ;
-      }
-
-      case SwitchLabels::length_right_less_than_length_left: {
-        symmetric_point_left = start_right;
-        std::advance(symmetric_point_left, - length_right);
-        if (comp(*end_right, *symmetric_point_left)) {
-          bool is_right_length_less_than_left;
-          do {
-          std::swap_ranges(start_right, one_past_end, symmetric_point_left);
-            one_past_end = start_right;
-            end_right    = one_past_end;
-            (void)--end_right;
-            start_right  = symmetric_point_left; //= end_left + 1;
-            end_left     = symmetric_point_left;
-            (void)--end_left;
-            length_left -= length_right;
-            //Note: if length_left <= 1 then is_right_less_than_left below
-            // is false.
-            if (!(is_right_length_less_than_left = (length_left > length_right)))
-              break ;
-            symmetric_point_left = start_right;
-            std::advance(symmetric_point_left, - length_right);
-            distance_to_symmetric_point = length_right;
-            //assert(std::distance(symmetric_point_left, end_left) ==
-            //                           std::distance(start_right, end_right));
-          } while (comp(*end_right, *symmetric_point_left));
-          is_endleft_less_or_equal_to_endright
-                      = static_cast<ThreeValue>(comp_le(*end_left, *end_right));
-          bool is_length_left_less_or_equal_to_1 = (length_left <= 1);
-          if (!is_length_left_less_or_equal_to_1) {
-            end_left_minus1 = end_left;
-            (void)--end_left_minus1;
-          }
-          start_right_plus1 = start_right;
-          (void)++start_right_plus1;
-          if (is_endleft_less_or_equal_to_endright) {
-            jump_to = SwitchLabels::endleft_le_endright;
-            continue ;
-          } else if (length_left <= 1) {
-            jump_to = SwitchLabels::trivial_case_length_left_equals_1;
-            continue ;
-          } else if (comp_le(*end_right, *start_left)) {
-            jump_to = SwitchLabels::trivial_case_endright_le_startleft;
-            continue ;
-          } else if (!is_right_length_less_than_left) {
-            jump_to = static_cast<SwitchLabels>(
-               SwitchLabels::length_left_less_than_length_right
-               + (2 * static_cast<unsigned char>(length_left == length_right)));
-            continue ;
-          }
-        }
-        symmetric_point_right = end_right;
-        distance_to_symmetric_point = length_right;
-        break ;
-      }
-
-      case SwitchLabels::length_left_equal_to_length_right: {
-        if (comp_le(*end_right, *start_left)) {
-          jump_to = SwitchLabels::trivial_case_endright_le_startleft;
-          continue ;
-        }
-        symmetric_point_left = start_left;
-        symmetric_point_right = end_right;
-        distance_to_symmetric_point = length_left;
-        break ;
-      }
-
-      case SwitchLabels::trivial_case_length_left_equals_1: {
-        if (length_right == 1) {
-          std::iter_swap(start_left, start_right);
-          return true;
-        }
-        mwob_namespace::RotateLeftBy1<BidirectionalIterator, Distance>(
-                                                      start_left, one_past_end);
-        return true;
-      }
-
-
-      case SwitchLabels::trivial_case_length_right_equals_1: {
-        mwob_namespace::RotateRightBy1<BidirectionalIterator, Distance>(
-                                            start_left, end_right, length_left);
-        return true;
-      }
-
-      case SwitchLabels::trivial_case_endright_le_startleft: {
-        if (comp(*end_right, *start_left)) {
-          std::rotate(start_left, start_right, one_past_end);
-          return true;
-        }
-        Distance distance_from_start_it_to_first_greater_than;
-    //    auto first_greater_than =
-        mwob_namespace::SmallestIteratorGreaterThan_KnownToExist_bi<
-          BidirectionalIterator, Compare, Distance, CompareLessOrEqual, ValueType>(
-          start_left, end_left, start_right, length_left, *start_left,
-          distance_from_start_it_to_first_greater_than,
-          comp, comp_le
-          );
-        //assert(distance_from_start_it_to_first_greater_than ==
-        //                       std::distance(start_left, first_greater_than));
-        auto num_const_left = distance_from_start_it_to_first_greater_than;
-        Distance distance_from_end_right_to_last_less_than;
-    //    auto last_less_than =
-        mwob_namespace::LargestIteratorLessThan_KnownToExist_bi<
-          BidirectionalIterator, Compare, Distance, CompareLessOrEqual, ValueType>(
-          start_right, end_right, one_past_end, length_right, *start_left,
-          distance_from_end_right_to_last_less_than,
-          comp, comp_le
-          );
-        //auto distance_from_start_it_to_last_less_than = length_right
-        //                          - distance_from_end_right_to_last_less_than;
-        //assert(distance_from_end_right_to_last_less_than ==
-        //                            std::distance(last_less_than, end_right));
-        auto num_const_right = distance_from_end_right_to_last_less_than;
-        auto location_of_old_start_left
-                           = std::rotate(start_left, start_right, one_past_end);
-        auto left_most_value = location_of_old_start_left;
-        std::advance(left_most_value, - num_const_right);
-        auto one_past_right_most_value = location_of_old_start_left;
-        std::advance(one_past_right_most_value, num_const_left);
-        std::rotate(left_most_value,
-                    location_of_old_start_left,
-                    one_past_right_most_value);
-        return true;
-      } //End case
-    } //End switch()
-    break ;
-  } //END while (true)
-
-  one_past_end = end_right;
-  (void)++one_past_end;
-  //assert(comp(*start_right, *end_left));
-  //assert(std::distance(symmetric_point_left, end_left) ==
-  //                         std::distance(start_right, symmetric_point_right));
-  //assert(distance_to_symmetric_point ==
-  //                          std::distance(symmetric_point_left, start_right));
-  //assert(distance_to_symmetric_point >= 2);
-  //assert(comp_le(*symmetric_point_left, *symmetric_point_right));
-
-  //We will now find the SMALLEST integer
-  // 1 <= d < distance_to_symmetric_point such that
-  // *(end_left - d) <= *(start_right + d)
-  Distance d;
-  //We will then define start_2nd_quarter and start_4th_quarter by:
-  // start_2nd_quarter = start_right - d;
-  // start_4th_quarter = start_right + d;
-  BidirectionalIterator start_2nd_quarter, start_4th_quarter;
-
-  {
-    Distance d_min = 1, d_max = distance_to_symmetric_point - 1;
-    //assert(start_left != end_left); assert(start_right != end_right);
-    BidirectionalIterator left_it_min = end_left, right_it_min = start_right;
-    (void)--left_it_min;
-    (void)++right_it_min;
-    start_2nd_quarter = symmetric_point_left;
-    start_4th_quarter = symmetric_point_right;
-
-    while (d_min < d_max) {
-      //assert(d_min == std::distance(start_right, right_it_min));
-      //assert(d_min == std::distance(left_it_min, end_left));
-      //assert(d_max == std::distance(start_2nd_quarter, end_left));
-      //assert(d_max == std::distance(start_right, start_4th_quarter));
-      auto half_distance = (d_max - d_min) / 2;
-      auto next_left_it  = left_it_min;
-      auto next_right_it = right_it_min;
-      std::advance(next_left_it,  - half_distance);
-      std::advance(next_right_it,   half_distance);
-      if (comp_le(*next_left_it, *next_right_it)) {
-        d_max = d_min + half_distance;
-        start_2nd_quarter = next_left_it;
-        start_4th_quarter = next_right_it;
-      } else { // else *next_right_it < *next_left_it
-        d_min += half_distance + 1;
-        //assert(d_min <= d_max);
-        //assert(next_left_it != start_left && next_right_it != end_right);
-        left_it_min  = next_left_it;
-        right_it_min = next_right_it;
-        (void)--left_it_min;
-        (void)++right_it_min;
-      }
-    }
-    //assert(d_min == d_max && d_min > 0);
-    d = d_min;
-    //assert(comp_le(*start_2nd_quarter, *start_4th_quarter));
-    //assert(start_2nd_quarter != end_left && start_4th_quarter != start_right);
-    //assert(!comp_le(*(start_2nd_quarter + 1), *start_4th_quarter_minus1));
-    //assert(comp(*(start_4th_quarter - 1), *start_2nd_quarter_plus1));
-  }
-  //assert(one_past_end == end_right + 1 && start_right == end_left + 1);
-  //assert(length_left  == std::distance(start_left, end_left) + 1);
-  //assert(length_right == std::distance(start_right, end_right) + 1);
-  //assert(comp(*end_right, *(end_left - 1)));
-  //assert(comp(*(start_right + 1), *start_left));
-  start_left_out   = start_left;
-  start_right_out  = start_right;
-  one_past_end_out = one_past_end;
-  d_out            = d;
-  start_2nd_quarter_out = ++start_2nd_quarter;;
-  start_4th_quarter_out = start_4th_quarter;
-  length_left_out  = length_left;
-  length_right_out = length_right;
-  return false; //The two non-decreasing sequences are not yet merged.
-}
-
-//Assumes that:
-// (1) length_left > 0 and length_right > 0, where
-//      length_left  == std::distance(start_left,  start_right) and
-//      length_right == std::distance(start_right, one_past_end)
-// (2) comp(*start_right, *end_left) where end_left == start_right - 1
-// (3) If is_left_trimmed == true  then comp(*start_right, *start_left)
-// (4) If is_left_trimmed == false then comp(*end_right,   *end_left)
-template<typename RandomAccessIterator, typename Compare,
-         typename Distance, typename CompareLessOrEqual, typename ValueType>
-void MergeWithOutBuffer1_recursive_RAI(RandomAccessIterator start_left,
-                           RandomAccessIterator start_right,
-                           RandomAccessIterator one_past_end,
-                           Distance length_left,
-                           Distance length_right,
-                           Compare comp,
-                           CompareLessOrEqual comp_le,
-                           ThreeValue is_startleft_less_or_equal_to_startright,
-                           ThreeValue is_endleft_less_or_equal_to_endright) {
-  //assert(length_left > 0 && length_right > 0);
-  //assert(comp(*start_right, *(start_right - 1)));
-  //if (is_startleft_less_or_equal_to_startright >= 0)
-  //    assert(is_startleft_less_or_equal_to_startright ==
-  //           comp_le(*start_left, *start_right));
-  //if (is_endleft_less_or_equal_to_endright >= 0)
-  //    assert(is_endleft_less_or_equal_to_endright ==
-  //           comp_le(*end_left, *end_right));
-  if (Trim1_switch_RAI<RandomAccessIterator, Compare, Distance,
-                       CompareLessOrEqual, ValueType>(start_left, start_right,
-                           one_past_end, length_left, length_right, comp,
-                           comp_le, is_startleft_less_or_equal_to_startright,
-                           is_endleft_less_or_equal_to_endright)) {
-    //assert(std::is_sorted(start_left, one_past_end, comp));
-    return ; //The two non-decreasing sequences have been merged.
-  }
-  //assert(length_left  == std::distance(start_left,  start_right));
-  //assert(length_right == std::distance(start_right, one_past_end));
-  auto length_smaller = length_left < length_right ? length_left : length_right;
-  Distance d = mwob_namespace::DisplacementToPotentialMedians_KnownToExist_RAI<
-      RandomAccessIterator, Compare, Distance, CompareLessOrEqual, ValueType>(
-          start_right - 1, start_right, length_smaller, comp, comp_le);
-  //assert(d > 0 && d < length_smaller);
-  {
-    auto start_2nd_quarter = start_right - d;
-    std::swap_ranges(start_2nd_quarter, start_right, start_right);
-    //auto one_past_end_2nd_quarter = start_right;
-    //Distance length_first_quarter = length_left - d;
-    MergeWithOutBuffer1_recursive_RAI<RandomAccessIterator, Compare, Distance,
-                                      CompareLessOrEqual, ValueType>(
-      start_left, start_2nd_quarter, start_right, length_left - d, d,
-      comp, comp_le,
-      ThreeValue::False, ThreeValue::Unknown);
-  }
-  //auto start_4th_quarter = start_right + d;
-  //Distance length_4th_quarter = length_right - d;
-  MergeWithOutBuffer1_recursive_RAI<RandomAccessIterator, Compare, Distance,
-                                    CompareLessOrEqual, ValueType>(
-    start_right, start_right + d, one_past_end, d, length_right - d,
-    comp, comp_le,
-    ThreeValue::Unknown, ThreeValue::False);
-  return ;
-}
-
-//This is the BidirectionalIterator version of
-// MergeWithOutBuffer1_recursive_RAI().
-//See MergeWithOutBuffer1_recursive_RAI() for a description of this function.
-template<typename BidirectionalIterator, typename Compare,
-         typename Distance, typename CompareLessOrEqual, typename ValueType>
-void MergeWithOutBuffer1_recursive_bi(BidirectionalIterator start_left,
-                            BidirectionalIterator start_right,
-                            BidirectionalIterator one_past_end,
-                            Distance length_left,
-                            Distance length_right,
-                            Compare comp,
-                            CompareLessOrEqual comp_le,
-                            ThreeValue is_startleft_less_or_equal_to_startright,
-                            ThreeValue is_endleft_less_or_equal_to_endright) {
-  BidirectionalIterator start_2nd_quarter, start_4th_quarter;
-  Distance d;
-  //assert(comp(*start_right, *(start_right - 1)));
-  //assert(length_left == std::distance(start_left, start_right));
-  //assert(length_right == std::distance(start_right, one_past_end));
-  if (Trim1_switch_bi<BidirectionalIterator, Compare, Distance,
-                      CompareLessOrEqual, ValueType>(start_left, start_right,
-                          one_past_end, length_left, length_right, d,
-                          start_2nd_quarter, start_4th_quarter,
-                          comp, comp_le,
-                          is_startleft_less_or_equal_to_startright,
-                          is_endleft_less_or_equal_to_endright)) {
-    //assert(std::is_sorted(start_left, one_past_end, comp));
-    return ; //The two non-decreasing sequences have been merged.
-  }
-  //assert(length_left == std::distance(start_left, start_right));
-  //assert(length_right == std::distance(start_right, one_past_end));
-  {
-    //auto start_2nd_quarter = start_right - d;
-    auto one_past_end_2nd_quarter = start_right;
-    std::swap_ranges(start_2nd_quarter, one_past_end_2nd_quarter, start_right);
-    Distance length_first_quarter = length_left - d;
-
-    MergeWithOutBuffer1_recursive_bi<BidirectionalIterator, Compare, Distance,
-                                     CompareLessOrEqual, ValueType>(
-      start_left, start_2nd_quarter, start_right, length_first_quarter, d,
-      comp, comp_le,
-      ThreeValue::False, ThreeValue::Unknown);
-  }
-  //auto start_4th_quarter = start_right; std::advance(start_4th_quarter, d);
-  Distance length_4th_quarter = length_right - d;
-  MergeWithOutBuffer1_recursive_bi<BidirectionalIterator, Compare, Distance,
-                                   CompareLessOrEqual, ValueType>(
-    start_right, start_4th_quarter, one_past_end, d, length_4th_quarter,
-    comp, comp_le,
-    ThreeValue::Unknown, ThreeValue::False);
-  //assert(std::is_sorted(start_left, one_past_end, comp));
-  return ;
-}
-
-//Assumes that:
-// (1) length_left > 0 and length_right > 0, where
-//      length_left  == std::distance(start_left,  start_right) and
-//      length_right == std::distance(start_right, one_past_end)
-// (2) start_right == end_left + 1
-// (3) comp(*start_right, *end_left)
-template<typename RandomAccessIterator, typename Compare,
-         typename Distance, typename CompareLessOrEqual, typename ValueType>
-inline void MergeWithOutBuffer1_RAI(RandomAccessIterator start_left,
-                                    RandomAccessIterator end_left,
-                                    RandomAccessIterator start_right,
-                                    RandomAccessIterator one_past_end,
-                                    Distance length_left,
-                                    Distance length_right,
-                                    Compare comp,
-                                    CompareLessOrEqual comp_le) {
-  //assert(length_left > 0 && length_right > 0);
-  //assert(end_left + 1 == start_right);
-  //assert(comp(*start_right, *end_left));
-  if (comp_le(*start_left, *start_right)) {
-    mwob_namespace::TrimLeft1_RAI<RandomAccessIterator,
-              Compare, Distance, CompareLessOrEqual, ValueType>(
-                start_left, end_left, *start_right, length_left, comp, comp_le);
-  }
-  //assert(length_left > 0 && length_right > 0);
-  MergeWithOutBuffer1_recursive_RAI<RandomAccessIterator, Compare, Distance,
-                                    CompareLessOrEqual, ValueType>(
-                               start_left, start_right, one_past_end,
-                               length_left, length_right, comp, comp_le,
-                               ThreeValue::False, ThreeValue::Unknown);
-  return ;
-}
-
-template<typename BidirectionalIterator, typename Compare,
-         typename Distance, typename CompareLessOrEqual, typename ValueType>
-inline void MergeWithOutBuffer1_bi(BidirectionalIterator start_left,
-                                   BidirectionalIterator end_left,
-                                   BidirectionalIterator start_right,
-                                   BidirectionalIterator one_past_end,
-                                   Distance length_left,
-                                   Distance length_right,
-                                   Compare comp,
-                                   CompareLessOrEqual comp_le) {
-  //assert(length_left > 0 && length_right > 0);
-  //assert(end_left + 1 == start_right);
-  if (comp_le(*start_left, *start_right)) {
-    mwob_namespace::TrimLeft1_bi<BidirectionalIterator,
-    Compare, Distance, CompareLessOrEqual, ValueType>(start_left, end_left,
-                                      start_right, length_left, comp, comp_le);
-  }
-  MergeWithOutBuffer1_recursive_bi<BidirectionalIterator, Compare, Distance,
-                                    CompareLessOrEqual, ValueType>(
-                               start_left, start_right, one_past_end,
-                               length_left, length_right, comp, comp_le,
-                               ThreeValue::False, ThreeValue::Unknown);
-  return ;
-}
-
-template<typename RandomAccessIterator, typename Compare,
-         typename Distance, typename CompareLessOrEqual, typename ValueType>
-inline void MergeWithOutBuffer1(RandomAccessIterator start_left,
-                                RandomAccessIterator end_left,
-                                RandomAccessIterator start_right,
-                                RandomAccessIterator one_past_end,
-                                Distance length_left,
-                                Distance length_right,
-                                Compare comp,
-                                CompareLessOrEqual comp_le,
-                                std::random_access_iterator_tag) {
-  MergeWithOutBuffer1_RAI<RandomAccessIterator, Compare, Distance,
-    CompareLessOrEqual, ValueType>(start_left, end_left, start_right,
-        one_past_end, length_left, length_right, comp, comp_le);
-  return ;
-}
-
-template<typename BidirectionalIterator, typename Compare,
-         typename Distance, typename CompareLessOrEqual, typename ValueType>
-inline void MergeWithOutBuffer1(BidirectionalIterator start_left,
-                                BidirectionalIterator end_left,
-                                BidirectionalIterator start_right,
-                                BidirectionalIterator one_past_end,
-                                Distance length_left,
-                                Distance length_right,
-                                Compare comp,
-                                CompareLessOrEqual comp_le,
-                                std::bidirectional_iterator_tag) {
-  //assert(end_left + 1 == start_right);
-  MergeWithOutBuffer1_bi<BidirectionalIterator, Compare, Distance,
-     CompareLessOrEqual, ValueType>(start_left, end_left, start_right,
-         one_past_end, length_left, length_right, comp, comp_le);
-  return ;
-}
-
-} //END namespace: merge_without_buffer_1_namespace
-
-
-//Primary dispatch function
+//Dispatch function
 template<typename Iterator, typename Compare,
          typename Distance = typename Iterator::difference_type>
-inline void MergeWithOutBuffer1(Iterator start_left,
-                                Iterator start_right,
-                                Iterator one_past_end_right,
-                                Distance length_left,
-                                Distance length_right,
-                                Compare comp) {
-  if (start_left == start_right || start_right == one_past_end_right)
-    return ;
-  typedef typename Iterator::value_type ValueType;
-  auto comp_le = [comp](const ValueType &lhs, const ValueType &rhs) -> bool {
-    return !comp(rhs, lhs);
-  };
-  typedef decltype(comp_le) CompareLessOrEqual;
-  Iterator end_left = start_right;
-  (void)--end_left;
-  if (comp_le(*end_left, *start_right)) //i.e. if *end_left <= *start_right
-    return ;
-  //assert(end_left + 1 == start_right);
-  merge_without_buffer_1_namespace::MergeWithOutBuffer1<Iterator, Compare,
-                  Distance, CompareLessOrEqual, ValueType>(
-                  start_left, end_left, start_right, one_past_end_right,
-                  length_left, length_right, comp, comp_le,
-                  typename std::iterator_traits<Iterator>::iterator_category());
- return ;
-}
-
-//Overloads of the above primary dispatch function
-
-template<typename Iterator,
-         typename Distance = typename Iterator::difference_type>
-inline void MergeWithOutBuffer1(Iterator start_left,
-                                Iterator start_right,
-                                Iterator one_past_end_right,
-                                Distance length_left,
-                                Distance length_right) {
-	  typedef typename Iterator::value_type ValueType;
-	  auto comp = std::less<ValueType>();
-	  typedef decltype(comp) Compare;
-	  MergeWithOutBuffer1<Iterator, Compare, Distance>(
-	              start_left, start_right, one_past_end_right,
-				  length_left, length_right, comp);
+inline void MergeWithOutBuffer(Iterator start_left,
+                               Iterator start_right,
+                               Iterator one_past_end_right,
+                               Distance length_left,
+                               Distance length_right,
+                               Compare comp) {
+  MergeWithOutBuffer2<Iterator, Compare, Distance>(
+                  start_left, start_right, one_past_end_right,
+                  length_left, length_right, comp);
  return ;
 }
 
 template<typename Iterator, typename Compare,
          typename Distance = typename Iterator::difference_type>
-inline void MergeWithOutBuffer1(Iterator start_left,
+inline void MergeWithOutBuffer(Iterator start_left,
                                 Iterator start_right,
                                 Iterator one_past_end_right,
                                 Compare comp) {
   Distance length_left  = std::distance(start_left, start_right);
   Distance length_right = std::distance(start_right, one_past_end_right);
-  MergeWithOutBuffer1<Iterator, Compare, Distance>(
+  MergeWithOutBuffer<Iterator, Compare, Distance>(
                               start_left, start_right, one_past_end_right,
                               length_left, length_right, comp);
- return ;
-}
-
-
-template<typename Iterator,
-         typename Distance = typename Iterator::difference_type>
-inline void MergeWithOutBuffer1(Iterator start_left,
-                                Iterator start_right,
-                                Iterator one_past_end_right) {
-  typedef typename Iterator::value_type ValueType;
-  auto comp = std::less<ValueType>();
-  typedef decltype(comp) Compare;
-  MergeWithOutBuffer1<Iterator, Compare, Distance>(
-              start_left, start_right, one_past_end_right, comp);
   return ;
 }
 
-template<typename Iterator, typename Compare,
-         typename Distance = typename Iterator::difference_type>
-inline void MergeWithOutBuffer1(Iterator start_left,
-                                Iterator one_past_end_left,
-                                Iterator start_right,
-                                Iterator one_past_end_right,
-                                Compare comp) {
-	  Distance length_left  = std::distance(start_left, one_past_end_left);
-	  Distance length_right = std::distance(start_right, one_past_end_right);
-	  MergeWithOutBuffer1<Iterator, Compare, Distance>(
-	              start_left, start_right, one_past_end_right,
-				  length_left, length_right, comp);
- return ;
-}
-
-template<typename Iterator,
-         typename Distance = typename Iterator::difference_type>
-inline void MergeWithOutBuffer1(Iterator start_left,
-                                Iterator one_past_end_left,
-                                Iterator start_right,
-                                Iterator one_past_end_right) {
-	  typedef typename Iterator::value_type ValueType;
-	  auto comp = std::less<ValueType>();
-	  typedef decltype(comp) Compare;
-	  MergeWithOutBuffer1<Iterator, Compare, Distance>(
-	              start_left, one_past_end_left,
-				  start_right, one_past_end_right,
-				  comp);
- return ;
-}
-
 template<typename Iterator, typename Compare, typename Distance>
-struct MergeWOBuff1 {
+struct MergeWOBuff {
   inline void operator()(Iterator start_left,
       Iterator start_right,
       Iterator one_past_end_right,
       Distance length_left,
       Distance length_right,
       Compare comp) {
-    MergeWithOutBuffer1<Iterator, Compare, Distance>(start_left, start_right,
+    MergeWithOutBuffer<Iterator, Compare, Distance>(start_left, start_right,
         one_past_end_right, length_left, length_right, comp);
     return ;
   }
 };
 
-#endif /* SRC_MERGE_WITHOUT_BUFFER1_H_ */
+
+#endif /* SRC_MERGE_WITHOUT_BUFFER_H_ */
