@@ -5,8 +5,8 @@ This project implements a new inplace and stable recursive merge function that m
 
 ******** Difference between the algorithms ********
 
-There are two versions of this algorithm, called `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()`. 
-`MergeWithOutBuffer2()` often outperforms `MergeWithOutBuffer1()` if the sorted lists contain many repeated values. This happens, for example, if the two lists contain a sum total of 10,000 `int`s and all values are between `0` and `2000`. Otherwise, usually either `MergeWithOutBuffer1()` outperforms `MergeWithOutBuffer2()` or there is little difference in their execution times. If you do not know which one to use then use `MergeWithOutBuffer1()`. 
+There are two versions of this algorithm, called `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()`. If you do not know which one to use then use `MergeWithOutBuffer1()`. 
+`MergeWithOutBuffer2()` often outperforms `MergeWithOutBuffer1()` *if* the sorted lists contain many repeated values. This happens, for example, if the two lists contain a sum total of 10,000 `int`s and all values are between `0` and `2000`. If this is _not_ the case (i.e. if few values occur repeatedly) then there is usually little difference in their execution times, although `MergeWithOutBuffer1()` may sometimes outperform `MergeWithOutBuffer2()` (because `MergeWithOutBuffer2()` performs more object comparisons, `MergeWithOutBuffer1()` is more likely to outperform if the computational cost of comparing two objects is high enough and if the two lists have enough objects that the algorithms' initialization times do not dominate their total run times). 
 
 Each of these two algorithms has implementations specialized according to whether the iterator is a Random Access Iterator (RAI), such as `std::vector`, or a Bidirectional Iterator (bi). Calls to `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()` will automatically select the most appropriate implementation; specifically, if the iterator is a RAI then the RAI version will be selected and otherwise the Bidirectional Iterator version will be selected. 
 
