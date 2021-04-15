@@ -231,7 +231,7 @@ inline bool Trim1_switch_RAI(RandomAccessIterator &start_left_out,
           }
           //assert(comp(*end_right, *(end_left - 1)));
         }
-  assert(start_right != end_right && start_right != one_past_end);
+  //assert(start_right != end_right && start_right != one_past_end);
         break ;
       }
 
