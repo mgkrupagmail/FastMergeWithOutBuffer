@@ -35,7 +35,7 @@ All of the other files in this project are used to:
 
 ************ Overloads of the algorithms ************
 
-There are serval overloads of MergeWithOutBuffer1(). There is always one overload that accepts (and another overload that does not accept) as its last argument a custom comparison operator (see https://en.cppreference.com/w/cpp/language/operator_comparison for the requirements). If no custom comparison operator is passed then the default comparison operator is used. 
+There are serval overloads of MergeWithOutBuffer1(). There is always one overload that accepts (and another overload that does not accept) as its last argument a custom comparison operator (see https://en.cppreference.com/w/cpp/named_req/Compare for the requirements). If no custom comparison operator is passed then the default comparison operator is used. 
 There is one version of MergeWithOutBuffer1() that accepts four iterators as arguments and another that accepts only three. The overload that accepts only three iterator arguments (start_left, start_right, one_past_end) assumes that the lists belong to the same container object and also that start_right is one past the last element of the left list (for example, use this version is you have a single std::vector<int> with values { 1, 2, 3, 4, 0, 1, 2 }). The overload that accepts four iterator arguments does not assume that the left list and the right list belong to the same container object; for example, the left (sorted) list and the right (sorted) list may belong to two different std::vector<int> objects. Everything that has just been said about MergeWithOutBuffer1()'s overloads can also be said about MergeWithOutBuffer2()'s overloads. 
 
 
