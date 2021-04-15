@@ -10,8 +10,10 @@ merge_without_buffer2.h       contains the implementation of MergeWithOutBuffer2
 merge_without_buffer_common.h contains helper functions that are used by both merge_without_buffer1.h and merge_without_buffer2.h
 
 The above files are the only ones that are needed in order to use these two algorithms. 
-All of the other files in this project are used to:
+All of the other files in this project are used to: 
+
 (1) test the correctness of the algorithms (e.g. merge_test_correctness.h and merge_verify_stability.h), or to 
+
 (2) time the algorithms and output relevant information (e.g. merge_time.h, time_merge_algorithms_class.h, gnu_merge_without_buffer.h, and mins_maxs_and_lambda.h). 
 
 MergeWithOutBuffer2() often outperforms MergeWithOutBuffer1() if the sorted lists contain many repeated values. This happens, for example, if the lists contain 10,000 integers and they are all valued between 0 and 2000. Otherwise, usually either MergeWithOutBuffer1() outperforms MergeWithOutBuffer2() or there is little difference in their execution time. 
