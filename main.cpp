@@ -144,12 +144,12 @@ struct TestingOptions {
     // that might not be allowed in file names (of certain OSs)
     // with other characters,
     auto replace_characters = [](char c) {
-  	  if (c == ':' || c == ',')
-  		  return '_';
-  	  else if (c == ' ')
-  		  return '-';
-  	  else
-  		  return c;
+        if (c == ':' || c == ',')
+            return '_';
+        else if (c == ' ')
+            return '-';
+        else
+            return c;
     };
     std::transform(str.begin(), str.end(), str.begin(), replace_characters);
     value_type_string_with_dashes = str;
@@ -883,24 +883,24 @@ int main() {
   TestingOptions to;
   //out_file_path_base will be the prefix used for all output files' names
   std::string out_file_path_base = std::string("Timings_")
-					  + std::string("CompileDateTime_")
+                      + std::string("CompileDateTime_")
                       + std::string(__DATE__) + std::string("_")
                       + std::string(__TIME__) + std::string("__")
-					  + std::string("ExecDateTime_")
+                      + std::string("ExecDateTime_")
                       + GetCurrentTimeString() + std::string("__");
   //Replace each space with a dash - Similarly, replace characters
   // that might not be allowed in file names (of certain OSs)
   // with other characters,
   auto replace_characters = [](char c) {
-	  if (c == ':' || c == ',')
-		  return '_';
-	  else if (c == ' ')
-		  return '-';
-	  else
-		  return c;
+      if (c == ':' || c == ',')
+          return '_';
+      else if (c == ' ')
+          return '-';
+      else
+          return c;
   };
   std::transform(out_file_path_base.begin(), out_file_path_base.end(),
-		         out_file_path_base.begin(), replace_characters);
+                 out_file_path_base.begin(), replace_characters);
   int return_value;
   Timings supreme_grand_total;
 
