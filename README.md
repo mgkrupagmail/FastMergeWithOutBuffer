@@ -16,18 +16,15 @@ Each of these two algorithms has implementations specialized according to whethe
 
 ******** Implementations of the algorithms and overview of project files ********
 
-`merge_without_buffer1.h`       contains the implementation of `MergeWithOutBuffer1()` and includes example calls.
-
-`merge_without_buffer2.h`       contains the implementation of `MergeWithOutBuffer2()` and includes example calls.
-
-`merge_without_buffer_common.h` contains helper functions that are used by both `merge_without_buffer1.h` and `merge_without_buffer2.h`.
+* `merge_without_buffer1.h`       contains the implementation of `MergeWithOutBuffer1()` and includes example calls.
+* `merge_without_buffer2.h`       contains the implementation of `MergeWithOutBuffer2()` and includes example calls.
+* `merge_without_buffer_common.h` contains helper functions that are used by both `merge_without_buffer1.h` and `merge_without_buffer2.h`.
 
 The above files are the only ones that are needed in order to use these two algorithms. 
 All of the other files in this project are used to: 
 
-(1) test the correctness of the algorithms (e.g. `merge_test_correctness.h` and `merge_verify_stability.h`), or to 
-
-(2) time the algorithms and output relevant information (e.g. `merge_time.h`, `time_merge_algorithms_class.h`, `gnu_merge_without_buffer.h`, and `mins_maxs_and_lambda.h`). The majority of code in most of these files is dedicated to recording timing data, computing statistics, and/or displaying correctly formatted text output.
+1. test the correctness of the algorithms (e.g. `merge_test_correctness.h` and `merge_verify_stability.h`), or to 
+2. time the algorithms and output relevant information (e.g. `merge_time.h`, `time_merge_algorithms_class.h`, `gnu_merge_without_buffer.h`, and `mins_maxs_and_lambda.h`). The majority of code in most of these files is dedicated to recording timing data, computing statistics, and/or displaying correctly formatted text output.
 
 In the future, the file `merge_without_buffer_standalone.h` will contain the primary algorithm of this project in a standalone C++ header file (i.e. no other files will be needed). 
 
@@ -44,7 +41,15 @@ Everything that has just been said about `MergeWithOutBuffer1()`'s overloads can
 
 ******** How the algorithms are timed ********
 
-The algorithms are applied to various data types (e.g. `char`, `short`, `int`, `long`, `float`, `double`, `std::string`, etc.) with values taken in various ranges (e.g. `int` values between x and y), and to various containers (e.g. `std::vector`, etc.), to various total lengths of data (e.g. merging lists with a combined total size of (`some_constant` multipled by) c^1, c^2, c^2, ..., c^20, ..., or more items, where `c` is a float constant (such as `c=1.7l` or `c=2`); here the total size increases exponentially), to various lengths of individual sorted lists (e.g. it times merging sorted lists of equal sizes and also times merging sorted lists where one list has an order of magnitude more items than the other list). For each possible combination, random data is generated multiple times and each aglorithm is timed on each instance of data (of course, the data is returned to its original initial state after each call so that the same data is sorted by each of the algorithms). 
+The algorithms are applied to:
+
+1. various data types (e.g. `char`, `short`, `int`, `long`, `float`, `double`, `std::string`, etc.) 
+2. with values taken in various ranges (e.g. `int` values between some `x` and `y`), and to 
+3. various containers (e.g. `std::vector`, etc.), and to 
+4. various total lengths of data (e.g. merging lists with a combined total size of (`some_constant` multipled by) c^1, c^2, c^2, ..., c^20, ..., or more items, where `c` is a float constant (such as `c=1.7l` or `c=2`); here the total size increases exponentially), and to 
+5. various lengths of individual sorted lists (e.g. it times merging sorted lists of equal sizes and also times merging sorted lists where one list has an order of magnitude more items than the other list). 
+
+For each possible combination, random data is generated multiple times and each aglorithm is timed on each instance of data (of course, the data is returned to its original initial state after each call so that the same data is sorted by each of the algorithms). 
 
 Moreover, each algorithm accesses the _same memory_ (e.g. if `MergeWithOutBuffer1()` and `gnu__merge_without_buffer()` are applied to an `std::vector` whose data starts at location `x` in memory, then every algorithm will access the same memory that starts at location `x`); this is meant to help control for possible variations in data access times that depend on where the data is stored in memory. For each data being merged, each algorithm is also called at least once before it starts being timed so that both the algorithm and the data are loaded into cache before timing starts (this can actually have a significant impact on timing). Each algorithm is called multiple times on each data to help reduce variance in its timing. 
 
