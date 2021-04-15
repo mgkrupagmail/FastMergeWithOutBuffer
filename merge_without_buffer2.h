@@ -19,6 +19,85 @@
 
 #include "merge_without_buffer_common.h"
 
+/* EXAMPLE CALLS:
+
+  {
+  //One vector stores two sorted lists that are then merged into a single sorted vector.
+  //That is, after the call is finished, vec will be sorted.
+
+  int length_left = 8, length_right = 11;
+  std::vector<int> vec({ 1, 2, 3, 4, 4, 5, 9, 9, 0, 0, 1, 3, 5, 5, 6, 7, 9, 10, 10 });
+
+  auto start_left         = vec.begin();
+  auto start_right        = start_left + length_left;
+  auto one_past_end_right = vec.end();
+
+  //Default comparison is used
+  MergeWithOutBuffer2<std::vector<int>::iterator>(start_left,
+                                                  start_right,
+                                                  one_past_end_right);
+
+  //Custom comparison is used
+  auto comp = std::less<int>();
+  MergeWithOutBuffer2<std::vector<int>::iterator>(start_left,
+                                                  start_right,
+                                                  one_past_end_right,
+                                                  comp);
+
+  }
+
+  {
+  //Two different sorted vectors are merged so that
+  // vec_left + vec_right becomes sorted. That is, after the call is finished,
+  // the last element of vec_left will be <= the first element of vec_right, and
+  // both vec_left and vec_right will be sorted.
+
+  std::vector<int> vec_left({ 1, 2, 3, 4, 4, 5, 9, 9 });
+  std::vector<int> vec_right({ 0, 0, 1, 3, 5, 5, 6, 7, 9, 10, 10 });
+  auto start_left         = vec_left.begin();
+  auto one_past_end_left  = vec_right.end();
+  auto start_right        = vec_right.begin();
+  auto one_past_end_right = vec_right.end();
+
+  auto comp = std::less<int>();
+
+  //OPTION 1:
+  //Default comparison is used
+  MergeWithOutBuffer2<std::vector<int>::iterator>(start_left,
+		                                          one_past_end_left,
+                                                  start_right,
+                                                  one_past_end_right);
+
+  //Custom comparison is used
+  MergeWithOutBuffer2<std::vector<int>::iterator>(start_left,
+												  one_past_end_left,
+												  start_right,
+                                                  one_past_end_right,
+                                                  comp);
+
+  //OPTION 2:
+
+  auto length_left  = vec_left.size();
+  auto length_right = vec_right.size();
+
+  //Default comparison is used
+  MergeWithOutBuffer2<std::vector<int>::iterator>(start_left,
+                                                  start_right,
+                                                  one_past_end_right,
+                                                  length_left,
+                                                  length_right);
+
+  //Custom comparison is used
+  MergeWithOutBuffer2<std::vector<int>::iterator>(start_left,
+                                                  start_right,
+                                                  one_past_end_right,
+                                                  length_left,
+                                                  length_right,
+                                                  comp);
+
+  }
+ */
+
 namespace merge_without_buffer_2_namespace {
 
 //Assumes that:
@@ -1111,8 +1190,7 @@ inline void MergeWithOutBuffer2(BidirectionalIterator start_left,
 } //END namespace: merge_without_buffer_2_namespace
 
 
-
-//Dispatch function
+//Primary dispatch function
 template<typename Iterator, typename Compare,
          typename Distance = typename Iterator::difference_type>
 inline void MergeWithOutBuffer2(Iterator start_left,
@@ -1142,6 +1220,24 @@ inline void MergeWithOutBuffer2(Iterator start_left,
  return ;
 }
 
+//Overloads of the above primary dispatch function
+
+template<typename Iterator,
+         typename Distance = typename Iterator::difference_type>
+inline void MergeWithOutBuffer2(Iterator start_left,
+                                Iterator start_right,
+                                Iterator one_past_end_right,
+                                Distance length_left,
+                                Distance length_right) {
+	  typedef typename Iterator::value_type ValueType;
+	  auto comp = std::less<ValueType>();
+	  typedef decltype(comp) Compare;
+	  MergeWithOutBuffer2<Iterator, Compare, Distance>(
+	              start_left, start_right, one_past_end_right,
+				  length_left, length_right, comp);
+ return ;
+}
+
 template<typename Iterator, typename Compare,
          typename Distance = typename Iterator::difference_type>
 inline void MergeWithOutBuffer2(Iterator start_left,
@@ -1157,7 +1253,6 @@ inline void MergeWithOutBuffer2(Iterator start_left,
 }
 
 
-//Dispatch function
 template<typename Iterator,
          typename Distance = typename Iterator::difference_type>
 inline void MergeWithOutBuffer2(Iterator start_left,
@@ -1171,6 +1266,36 @@ inline void MergeWithOutBuffer2(Iterator start_left,
   return ;
 }
 
+template<typename Iterator, typename Compare,
+         typename Distance = typename Iterator::difference_type>
+inline void MergeWithOutBuffer2(Iterator start_left,
+                                Iterator one_past_end_left,
+                                Iterator start_right,
+                                Iterator one_past_end_right,
+                                Compare comp) {
+	  Distance length_left  = std::distance(start_left, one_past_end_left);
+	  Distance length_right = std::distance(start_right, one_past_end_right);
+	  MergeWithOutBuffer2<Iterator, Compare, Distance>(
+	              start_left, start_right, one_past_end_right,
+				  length_left, length_right, comp);
+ return ;
+}
+
+template<typename Iterator,
+         typename Distance = typename Iterator::difference_type>
+inline void MergeWithOutBuffer2(Iterator start_left,
+                                Iterator one_past_end_left,
+                                Iterator start_right,
+                                Iterator one_past_end_right) {
+	  typedef typename Iterator::value_type ValueType;
+	  auto comp = std::less<ValueType>();
+	  typedef decltype(comp) Compare;
+	  MergeWithOutBuffer2<Iterator, Compare, Distance>(
+	              start_left, one_past_end_left,
+				  start_right, one_past_end_right,
+				  comp);
+ return ;
+}
 
 template<typename Iterator, typename Compare, typename Distance>
 struct MergeWOBuff2 {
@@ -1185,8 +1310,5 @@ struct MergeWOBuff2 {
     return ;
   }
 };
-
-
-
 
 #endif /* SRC_MERGE_WITHOUT_BUFFER2_H_ */
