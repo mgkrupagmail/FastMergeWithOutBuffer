@@ -8,7 +8,7 @@ In additional, unlike the GNU ISO C++ Library's std::__merge_without_buffer(), t
 ******** Difference between the algorithms ********
 
 There are two versions of this algorithm, called MergeWithOutBuffer1() and MergeWithOutBuffer2(). 
-MergeWithOutBuffer2() often outperforms MergeWithOutBuffer1() if the sorted lists contain many repeated values. This happens, for example, if the lists contain 10,000 integers and they are all valued between 0 and 2000. Otherwise, usually either MergeWithOutBuffer1() outperforms MergeWithOutBuffer2() or there is little difference in their execution times. 
+MergeWithOutBuffer2() often outperforms MergeWithOutBuffer1() if the sorted lists contain many repeated values. This happens, for example, if the lists contain 10,000 integers and they are all valued between 0 and 2000. Otherwise, usually either MergeWithOutBuffer1() outperforms MergeWithOutBuffer2() or there is little difference in their execution times. If you do not know which one to use then use MergeWithOutBuffer1(). 
 
 Each of these two algorithms has implementations specialized according to whether the iterator is a Random Access Iterator (RAI), such as std::vector, or a Bidirectional Iterator (bi). Calls to MergeWithOutBuffer1() and MergeWithOutBuffer2() will automatically select the most appropriate implementation; specifically, if the iterator is a RAI then the RAI version will be selected and otherwise the Bidirectional Iterator version will be selected. 
 
