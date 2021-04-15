@@ -192,6 +192,12 @@ struct TestingOptions {
     };
     std::transform(valuetype_str.begin(), valuetype_str.end(),
                    valuetype_str.begin(), spaces_to_hyphens);
+
+    auto colon_to_underscore = [](char c) {
+      return c == ':' ? '_' : c;
+    };
+    std::transform(valuetype_str.begin(), valuetype_str.end(),
+                   valuetype_str.begin(), colon_to_underscore);
     return GetPathToFile(valuetype_str, comp_string);
   }
 
