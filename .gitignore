@@ -2,6 +2,7 @@
 /merge_without_buffer_trim1.h
 /merge_without_buffer_trim2.h
 /merge_without_buffer_trim3.h
+/merge_common.h
 
 # Prerequisites
 *.d
