@@ -3,10 +3,14 @@ This project implements a new inplace and stable recursive merge function that m
 
 In additional, unlike the GNU ISO C++ Library's std::__merge_without_buffer(), the two sorted sequences to be merged need NOT even be accessed by iterators of the same type.
 
+= The implementations =
+
 There are two versions of this algorithm, called MergeWithOutBuffer1() and MergeWithOutBuffer2().
 
 merge_without_buffer1.h       contains the implementation of MergeWithOutBuffer1() and includes example calls.
+
 merge_without_buffer2.h       contains the implementation of MergeWithOutBuffer2() and includes example calls.
+
 merge_without_buffer_common.h contains helper functions that are used by both merge_without_buffer1.h and merge_without_buffer2.h
 
 The above files are the only ones that are needed in order to use these two algorithms. 
