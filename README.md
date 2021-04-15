@@ -15,6 +15,7 @@ Each of these two algorithms has implementations specialized according to whethe
 MergeWithOutBuffer2() is an extension of the MergeWithOutBuffer1() algorithm. MergeWithOutBuffer1() contains the "minimum" needed in order to implement this new merge algorithm. If someone is trying to understand how these algorithms work, then they should start by reading the implementation of MergeWithOutBuffer1() (instead of MergeWithOutBuffer2()). The implementations have many commented out assert()s that can significantly help in understanding these algorithms. The RAI and Bidirectional Iterator implementations of these algorithms are nearly identical and it is recommended that the RAI version be studied first. The Bidirectional Iterator implementation is an altered version of the RAI implementation, changed so that Random Access operations were replaced with appropriate Bidirectional Iterator code. 
 
 
+
 ******** Implementations of the algorithms and overview of project files ********
 
 merge_without_buffer1.h       contains the implementation of MergeWithOutBuffer1() and includes example calls.
@@ -29,6 +30,13 @@ All of the other files in this project are used to:
 (1) test the correctness of the algorithms (e.g. merge_test_correctness.h and merge_verify_stability.h), or to 
 
 (2) time the algorithms and output relevant information (e.g. merge_time.h, time_merge_algorithms_class.h, gnu_merge_without_buffer.h, and mins_maxs_and_lambda.h). 
+
+
+
+************ Overloads of the algorithms ************
+
+There are serval overloads of MergeWithOutBuffer1(). There is always one overload that accepts (and another overload that does not accept) a custom comparitor as its last argument. If no custom comparison operator is passed then the default comparison operator is used. 
+There is one version of MergeWithOutBuffer1() that accepts four iterators as arguments and another that accepts only three. The overload that accepts only three iterator arguments (start_left, start_right, one_past_end) assumes that the lists belong to the same container object and also that start_right is one past the last element of the left list (for example, use this version is you have a single std::vector<int> with values { 1, 2, 3, 4, 0, 1, 2 }). The overload that accepts four iterator arguments does not assume that the left list and the right list belong to the same container object; for ecample, the left (sorted) list and the right (sorted) list may belong to two different std::vector<int> objects. Everything that has just been said about MergeWithOutBuffer1()'s overloads can also be said about MergeWithOutBuffer2()'s overloads. 
 
 
 
