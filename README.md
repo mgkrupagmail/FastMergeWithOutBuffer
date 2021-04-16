@@ -24,11 +24,11 @@ Implementations of two variations of this new algorithm are found in the followi
 * `merge_without_buffer_common.h` contains helper functions that are used by both `merge_without_buffer1.h` and `merge_without_buffer2.h`.
 
 The above header files are the only ones that are needed in order to use these two variations of this new algorithm. 
-All of the other files in this project exist to: 
+All of the other files in this project exist to do the following: 
 
-1. test the correctness of the algorithms (e.g. `merge_test_correctness.h`, `merge_verify_stability.h`, and `main.cpp`), or to 
-2. time the algorithms and output relevant information (e.g. `merge_time.h`, `time_merge_algorithms_class.h`, `gnu_merge_without_buffer.h`, `mins_maxs_and_lambda.h`, and `main.cpp`). The majority of code in most of these files is dedicated to recording timing data, computing statistics, and/or displaying correctly formatted text output, or to
-3. help test or time the algorithms (e.g. `misc_helpers.h`, `merge_without_buffer.h`, and `main.cpp`). 
+1. Test the correctness of the algorithms (e.g. `merge_test_correctness.h`, `merge_verify_stability.h`, and `main.cpp`). 
+2. Time the algorithms and output relevant information (e.g. `merge_time.h`, `time_merge_algorithms_class.h`, `gnu_merge_without_buffer.h`, `mins_maxs_and_lambda.h`, and `main.cpp`). The majority of code in most of these files is dedicated to recording timing data, computing statistics, and/or displaying correctly formatted text output. 
+3. Help test or time the algorithms (e.g. `misc_helpers.h`, `merge_without_buffer.h`, and `main.cpp`). 
 
 In the future, the file `merge_without_buffer_standalone.h` will contain implementations of the primary algorithms of this project in a standalone C++ header file (i.e. no other files will be needed). 
 
