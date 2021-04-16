@@ -35,7 +35,7 @@ In the future, the file `merge_without_buffer_standalone.h` will contain impleme
 
 # Choosing a variant
 
-There are two versions of this new algorithm, which are called `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()`. 
+There are two variations of this new algorithm, which are called `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()`. 
 If you do not know which one to use then use `MergeWithOutBuffer1()`. 
 `MergeWithOutBuffer2()` often outperforms `MergeWithOutBuffer1()` *if* the sorted lists contain many repeated values. This happens, for example, if the two lists contain a sum total of 10,000 `int`s and all values are between `0` and `2000`. 
 If this is _not_ the case (i.e. if there are relatively few values that are repeated in the lists, which is often the case with floating-point data for instance) then there is usually little difference in their execution times, although `MergeWithOutBuffer1()` may sometimes outperform `MergeWithOutBuffer2()`. 
@@ -56,7 +56,7 @@ The RAI and Bidirectional Iterator implementations of these algorithms are nearl
 The Bidirectional Iterator implementation is an altered version of the RAI implementation, changed by replacing Random Access operations with optimized equivalent Bidirectional Iterator code. 
 Knowing the `std::distance()` (i.e. the number of objects) between two given iterators is an important part of this new algorithm and most of the optimizations introduced into the Bidirection Iterator implementation revolve around this. 
 These optimization are important because the Bidirection Iterator implementation will be used when the iterators point to a objects in linked lists such as `std::list<int>`, for example. 
-Computing the distance between iterators in a linked list is an O(N) operation on average (version O(1) for RAIs) so the Bidirectional Iterator implementation is designed to minimize the number times that this computation is done. 
+Computing the distance between iterators in a linked list is an O(N) operation on average (versus O(1) for RAIs) so the Bidirectional Iterator implementation is designed to minimize the number times that this computation is done. 
 There can even be as few as zero calls to `std::distance()` if the lengths of the sorted linked lists are known before hand and passed to an appropriate overload; otherwise, their lengths will be computed at the start of the call. 
 
 
@@ -66,8 +66,8 @@ There can even be as few as zero calls to `std::distance()` if the lengths of th
 There are serval overloads of `MergeWithOutBuffer1()`. There is always one overload that accepts (and another overload that does not accept) as its last argument a custom comparison operator (see https://en.cppreference.com/w/cpp/named_req/Compare for the requirements). 
 If no custom comparison operator is passed then the default comparison operator is used. 
 
-There is one version of `MergeWithOutBuffer1()` that accepts four iterators as arguments and another that accepts only three. 
-The overload that accepts only three iterator arguments `(start_left, start_right, one_past_end)` assumes that the lists belong to the same container object and also that start_right is one past the last element of the left list (for example, use this version is you have a single `std::vector<int>` with values `{ 1, 2, 3, 4, 0, 1, 2 }`). 
+There is one overload of `MergeWithOutBuffer1()` that accepts four iterators as arguments and another that accepts only three. 
+The overload that accepts only three iterator arguments `(start_left, start_right, one_past_end)` assumes that the lists belong to the same container object and also that start_right is one past the last element of the left list (for example, use this overload if you have a single `std::vector<int>` with values `{ 1, 2, 3, 4, 0, 1, 2 }`). 
 The overload that accepts four iterator arguments does not assume that the left list and the right list belong to the same container object; for example, the left (sorted) list and the right (sorted) list may belong to two different `std::vector<int>` objects; currently, the two objects need to have the same iterator type (e.g. if one iterator has type `std::vector<int>::iterator` then so must the other). 
 However, it is possible to implement these algorithms for two different iterator types because all that is required is that the iterators point to the same type of object; such an implementation was previously present in this project (before it was removed after a major update) and needs to be added back. 
 
