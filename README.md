@@ -7,7 +7,7 @@ There are several overloads.
 Some overloads accept as input interators to two sorted lists that (potentially) belong to two different objects (for example, to two distinct `std::vector<int>` objects: `left_sorted_data` and `right_sorted_data`). 
 There are also overloads that accept custom comparison operators. 
 
-Example calls can be found in `merge_without_buffer1.h` and `merge_without_buffer2.h`, which contain C++ implementations of two variations of this new algorithm. 
+Example calls can be found in the comments at the top of `merge_without_buffer1.h` and `merge_without_buffer2.h`, which contain C++ implementations of two variations of this new algorithm. 
 
 
 
