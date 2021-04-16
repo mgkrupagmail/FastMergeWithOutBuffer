@@ -15,25 +15,6 @@ As usual, these specializations assume that the element _immediately after_ the 
 
 
 
-# Difference between the variants of the algorithm and their implementations
-
-There are two versions of this algorithm, called `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()`. 
-If you do not know which one to use then use `MergeWithOutBuffer1()`. 
-`MergeWithOutBuffer2()` often outperforms `MergeWithOutBuffer1()` *if* the sorted lists contain many repeated values. This happens, for example, if the two lists contain a sum total of 10,000 `int`s and all values are between `0` and `2000`. 
-If this is _not_ the case (i.e. if there are relatively few values that are repeated in the lists, which is often the case with floating-point data for instance) then there is usually little difference in their execution times, although `MergeWithOutBuffer1()` may sometimes outperform `MergeWithOutBuffer2()`. 
-Because `MergeWithOutBuffer2()` performs more object comparisons, `MergeWithOutBuffer1()` is more likely to outperform it if the computational cost of comparing two objects is high enough and if the two lists have enough objects that the algorithms' initialization times do not dominate their total run times. 
-
-`MergeWithOutBuffer2()` is an extension of the `MergeWithOutBuffer1()` algorithm. `MergeWithOutBuffer1()` contains the "minimum" needed in order to implement this new merge algorithm. 
-If someone is trying to understand how these algorithms work, then they should start by reading the implementation of `MergeWithOutBuffer1()` (instead of `MergeWithOutBuffer2()`). 
-The implementations have many commented out assert()s that can significantly help in understanding these algorithms. 
-
-Each of these two algorithms has implementations specialized according to whether the iterator is a Random Access Iterator (RAI), such as `std::vector`, or a Bidirectional Iterator (bi). 
-Calls to `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()` will automatically select the most appropriate implementation; specifically, if the iterator is a RAI then the RAI version will be selected and otherwise the Bidirectional Iterator version will be selected. 
-The RAI and Bidirectional Iterator implementations of these algorithms are nearly identical and for someone trying to understand threse new algorithms, it is recommended that the RAI version be studied first because it is a simpler implmementation. 
-The Bidirectional Iterator implementation is an altered version of the RAI implementation, changed by replacing all Random Access operations with optimized equivalent Bidirectional Iterator code. 
-
-
-
 # Overview of project files
 
 Implementations of two variations of this new algorithm are found in the following files:
@@ -50,6 +31,27 @@ All of the other files in this project exist to:
 3. help test or time the algorithms (e.g. `misc_helpers.h`, `main.cpp`, `merge_without_buffer.h`). 
 
 In the future, the file `merge_without_buffer_standalone.h` will contain implementations of the primary algorithms of this project in a standalone C++ header file (i.e. no other files will be needed). 
+
+
+
+# Difference between the variants of the algorithm and their implementations
+
+There are two versions of this algorithm, called `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()`. 
+If you do not know which one to use then use `MergeWithOutBuffer1()`. 
+`MergeWithOutBuffer2()` often outperforms `MergeWithOutBuffer1()` *if* the sorted lists contain many repeated values. This happens, for example, if the two lists contain a sum total of 10,000 `int`s and all values are between `0` and `2000`. 
+If this is _not_ the case (i.e. if there are relatively few values that are repeated in the lists, which is often the case with floating-point data for instance) then there is usually little difference in their execution times, although `MergeWithOutBuffer1()` may sometimes outperform `MergeWithOutBuffer2()`. 
+Because `MergeWithOutBuffer2()` performs more object comparisons, `MergeWithOutBuffer1()` is more likely to outperform it if the computational cost of comparing two objects is high enough and if the two lists have enough objects that the algorithms' initialization times do not dominate their total run times. 
+
+`MergeWithOutBuffer2()` is an extension of the `MergeWithOutBuffer1()` algorithm. `MergeWithOutBuffer1()` contains the "minimum" needed in order to implement this new merge algorithm. 
+If someone is trying to understand how these algorithms work, then they should start by reading the implementation of `MergeWithOutBuffer1()` (instead of `MergeWithOutBuffer2()`). 
+The implementations have many commented out assert()s that can significantly help in understanding these algorithms. 
+
+Each of these two algorithms has implementations specialized according to whether the iterator is a Random Access Iterator (RAI), such as `std::vector`, or a Bidirectional Iterator (bi). 
+Calls to `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()` will automatically select the most appropriate implementation; specifically, if the iterator is a RAI then the RAI version will be selected and otherwise the Bidirectional Iterator version will be selected. 
+The RAI and Bidirectional Iterator implementations of these algorithms are nearly identical and for someone trying to understand these new algorithms, it is recommended that the RAI version be studied first because it is a simpler implmementation. 
+The Bidirectional Iterator implementation is an altered version of the RAI implementation, changed by replacing all Random Access operations with optimized equivalent Bidirectional Iterator code. 
+
+
 
 # Overloads of the algorithms
 
