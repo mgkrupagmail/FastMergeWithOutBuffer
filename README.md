@@ -11,7 +11,7 @@ Half of the overloads accept as input four interators to two sorted lists that (
 
 The other overloads accept as input three iterators that are assumed to all point to a single object's data. 
 These are all specializations of the aforementioned (four iterator input) overloads. 
-These specializations assume that the element _immediately after_ the _last_ element of the left sorted list is also the _first_ element of the right sorted list. 
+As usual, these specializations assume that the element _immediately after_ the _last_ element of the left sorted list is also the _first_ element of the right sorted list. 
 
 
 
