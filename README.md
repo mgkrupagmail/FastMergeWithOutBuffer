@@ -1,18 +1,29 @@
 # FastMergeWithOutBuffer
-This project implements a new inplace and stable recursive merge algorithm that merges two non-decreasing ranges into a single non-decreasing range with_*out*_ the use of a buffer. It is compared to the implementation of `__merge_without_buffer` found in GNU ISO C++ Library and timed to be faster. 
+This project implements a new inplace and stable recursive merge algorithm that merges two non-decreasing ranges into a single non-decreasing range with_*out*_ the use of a buffer. 
+It is compared to the implementation of `__merge_without_buffer` found in GNU ISO C++ Library and timed to be faster. 
 
-The C++ implementations are designed to work with iterators and they can be used various C++ standard library containers such as `std::vector`, `std::deque`, `std::list`, and others. They also allow for custom comparison functions to be used. The two sorted lists that are to be merged may belong to two different objects (for example, to two distinct `std::vector<int>` objects: `left_sorted_data` and `right_sorted_data`). Example calls can be found in `merge_without_buffer1.h` and `merge_without_buffer2.h`, which contain C++ implementations of two variations of this new algorithm. 
+The C++ implementations are designed to work with iterators and they can be used various C++ standard library containers such as `std::vector`, `std::deque`, `std::list`, and others. They also allow for custom comparison functions to be used. 
+The two sorted lists that are to be merged may belong to two different objects (for example, to two distinct `std::vector<int>` objects: `left_sorted_data` and `right_sorted_data`). 
+Example calls can be found in `merge_without_buffer1.h` and `merge_without_buffer2.h`, which contain C++ implementations of two variations of this new algorithm. 
 
 
 
 # Difference between the algorithms
 
-There are two versions of this algorithm, called `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()`. If you do not know which one to use then use `MergeWithOutBuffer1()`. 
-`MergeWithOutBuffer2()` often outperforms `MergeWithOutBuffer1()` *if* the sorted lists contain many repeated values. This happens, for example, if the two lists contain a sum total of 10,000 `int`s and all values are between `0` and `2000`. If this is _not_ the case (i.e. if there are relatively few values that are repeated in the lists, which is often the case with floating-point data for instance) then there is usually little difference in their execution times, although `MergeWithOutBuffer1()` may sometimes outperform `MergeWithOutBuffer2()` (because `MergeWithOutBuffer2()` performs more object comparisons, `MergeWithOutBuffer1()` is more likely to outperform if the computational cost of comparing two objects is high enough and if the two lists have enough objects that the algorithms' initialization times do not dominate their total run times). 
+There are two versions of this algorithm, called `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()`. 
+If you do not know which one to use then use `MergeWithOutBuffer1()`. 
+`MergeWithOutBuffer2()` often outperforms `MergeWithOutBuffer1()` *if* the sorted lists contain many repeated values. This happens, for example, if the two lists contain a sum total of 10,000 `int`s and all values are between `0` and `2000`. 
+If this is _not_ the case (i.e. if there are relatively few values that are repeated in the lists, which is often the case with floating-point data for instance) then there is usually little difference in their execution times, although `MergeWithOutBuffer1()` may sometimes outperform `MergeWithOutBuffer2()`. 
+Because `MergeWithOutBuffer2()` performs more object comparisons, `MergeWithOutBuffer1()` is more likely to outperform it if the computational cost of comparing two objects is high enough and if the two lists have enough objects that the algorithms' initialization times do not dominate their total run times. 
 
-Each of these two algorithms has implementations specialized according to whether the iterator is a Random Access Iterator (RAI), such as `std::vector`, or a Bidirectional Iterator (bi). Calls to `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()` will automatically select the most appropriate implementation; specifically, if the iterator is a RAI then the RAI version will be selected and otherwise the Bidirectional Iterator version will be selected. 
+Each of these two algorithms has implementations specialized according to whether the iterator is a Random Access Iterator (RAI), such as `std::vector`, or a Bidirectional Iterator (bi). 
+Calls to `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()` will automatically select the most appropriate implementation; specifically, if the iterator is a RAI then the RAI version will be selected and otherwise the Bidirectional Iterator version will be selected. 
 
-`MergeWithOutBuffer2()` is an extension of the `MergeWithOutBuffer1()` algorithm. `MergeWithOutBuffer1()` contains the "minimum" needed in order to implement this new merge algorithm. If someone is trying to understand how these algorithms work, then they should start by reading the implementation of `MergeWithOutBuffer1()` (instead of `MergeWithOutBuffer2()`). The implementations have many commented out assert()s that can significantly help in understanding these algorithms. The RAI and Bidirectional Iterator implementations of these algorithms are nearly identical and it is recommended that the RAI version be studied first. The Bidirectional Iterator implementation is an altered version of the RAI implementation, changed by replacing all Random Access operations with equivalent Bidirectional Iterator code. 
+`MergeWithOutBuffer2()` is an extension of the `MergeWithOutBuffer1()` algorithm. `MergeWithOutBuffer1()` contains the "minimum" needed in order to implement this new merge algorithm. 
+If someone is trying to understand how these algorithms work, then they should start by reading the implementation of `MergeWithOutBuffer1()` (instead of `MergeWithOutBuffer2()`). 
+The implementations have many commented out assert()s that can significantly help in understanding these algorithms. 
+The RAI and Bidirectional Iterator implementations of these algorithms are nearly identical and it is recommended that the RAI version be studied first. 
+The Bidirectional Iterator implementation is an altered version of the RAI implementation, changed by replacing all Random Access operations with equivalent Bidirectional Iterator code. 
 
 
 
@@ -32,9 +43,12 @@ In the future, the file `merge_without_buffer_standalone.h` will contain the pri
 
 # Overloads of the algorithms
 
-There are serval overloads of `MergeWithOutBuffer1()`. There is always one overload that accepts (and another overload that does not accept) as its last argument a custom comparison operator (see https://en.cppreference.com/w/cpp/named_req/Compare for the requirements). If no custom comparison operator is passed then the default comparison operator is used. 
+There are serval overloads of `MergeWithOutBuffer1()`. There is always one overload that accepts (and another overload that does not accept) as its last argument a custom comparison operator (see https://en.cppreference.com/w/cpp/named_req/Compare for the requirements). 
+If no custom comparison operator is passed then the default comparison operator is used. 
 
-There is one version of `MergeWithOutBuffer1()` that accepts four iterators as arguments and another that accepts only three. The overload that accepts only three iterator arguments `(start_left, start_right, one_past_end)` assumes that the lists belong to the same container object and also that start_right is one past the last element of the left list (for example, use this version is you have a single `std::vector<int>` with values `{ 1, 2, 3, 4, 0, 1, 2 }`). The overload that accepts four iterator arguments does not assume that the left list and the right list belong to the same container object; for example, the left (sorted) list and the right (sorted) list may belong to two different `std::vector<int>` objects; currently, the two objects need to have the same iterator type (e.g. if one iterator has type `std::vector<int>::iterator` then so must the other). 
+There is one version of `MergeWithOutBuffer1()` that accepts four iterators as arguments and another that accepts only three. 
+The overload that accepts only three iterator arguments `(start_left, start_right, one_past_end)` assumes that the lists belong to the same container object and also that start_right is one past the last element of the left list (for example, use this version is you have a single `std::vector<int>` with values `{ 1, 2, 3, 4, 0, 1, 2 }`). 
+The overload that accepts four iterator arguments does not assume that the left list and the right list belong to the same container object; for example, the left (sorted) list and the right (sorted) list may belong to two different `std::vector<int>` objects; currently, the two objects need to have the same iterator type (e.g. if one iterator has type `std::vector<int>::iterator` then so must the other). 
 However, it is possible to implement these algorithms for two different iterator types because all that is required is that the iterators point to the same type of object; such an implementation was previously present in this project (before it was removed after a major update) and needs to be added back. 
 
 Everything that has just been said about `MergeWithOutBuffer1()`'s overloads can also be said about `MergeWithOutBuffer2()`'s overloads. 
@@ -56,6 +70,7 @@ For each possible combination above:
 * For each instance of data being merged, each algorithm is also called at least once before it starts being timed so that both the algorithm and the data are loaded into cache before timing starts (this can actually have a significant impact on timing). 
 * Each algorithm is called multiple times on each instance of data to help reduce variance in its timing. 
 
-Moreover, to the furthest extent possible (e.g. the following might not be guaranteed for non-primitive data types whose objects allocate memory on the heap), each algorithm accesses the _same memory_ (e.g. if `MergeWithOutBuffer1()` and `gnu__merge_without_buffer()` are applied to an `std::vector<int>` of size 10,000 whose data starts at location `x` in memory, then every algorithm will access the same memory that starts at location `x`); this is meant to help control for possible variations in data access times that depend on where the data is stored in memory. 
+Moreover, to the furthest extent possible (e.g. the following might not be guaranteed for non-primitive data types whose objects allocate memory on the heap), each algorithm accesses the _same memory_ (e.g. if `MergeWithOutBuffer1()` and `gnu__merge_without_buffer()` are applied to an `std::vector<int>` of size 10,000 whose data starts at location `x` in memory, then every algorithm will access the same memory that starts at location `x`). 
+This is meant to help control for possible variations in data access times that depend on where the data is stored in memory. 
 
 Templates are used heavily in the timing algorithms in order to prevent the code from becoming too bloated (because of the many variations mentioned above) and also to guarantee that the exact same code is used to time each algorithm. 
