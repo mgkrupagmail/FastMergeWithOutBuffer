@@ -56,7 +56,7 @@ The Bidirectional Iterator implementation is an altered version of the RAI imple
 
 
 
-# Overloads of the algorithms
+# Overloads of the function calls
 
 There are serval overloads of `MergeWithOutBuffer1()`. There is always one overload that accepts (and another overload that does not accept) as its last argument a custom comparison operator (see https://en.cppreference.com/w/cpp/named_req/Compare for the requirements). 
 If no custom comparison operator is passed then the default comparison operator is used. 
