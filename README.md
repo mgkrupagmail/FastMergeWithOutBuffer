@@ -3,6 +3,8 @@ This project implements a new inplace and stable recursive merge algorithm that 
 It is compared to the implementation of `__merge_without_buffer` found in GNU ISO C++ Library and timed to be faster. 
 
 The C++ implementations accept iterators as inputs and they can be used with various C++ standard library containers such as `std::vector`, `std::deque`, `std::list`, and others. 
+Example calls can be found in the comments at the top of `merge_without_buffer1.h` and `merge_without_buffer2.h`, which contain C++ implementations of two variations of this new algorithm. 
+
 There are several overloads. 
 There is always one overload that accepts a custom comparison operator and another that does not. 
 Half of the overloads accept as input four interators to two sorted lists that (potentially) belong to two different objects (for example, to two distinct `std::vector<int>` objects: `left_sorted_data` and `right_sorted_data`). 
@@ -10,8 +12,6 @@ Half of the overloads accept as input four interators to two sorted lists that (
 The other overloads accept as input three iterators that are assumed to all point to a single object's data. 
 These are all specializations of the aforementioned (four iterator input) overloads. 
 These specializations assume that the element _immediately after_ the _last_ element of the left sorted list is also the _first_ element of the right sorted list. 
-
-Example calls can be found in the comments at the top of `merge_without_buffer1.h` and `merge_without_buffer2.h`, which contain C++ implementations of two variations of this new algorithm. 
 
 
 
