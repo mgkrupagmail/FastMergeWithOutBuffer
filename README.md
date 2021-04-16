@@ -15,7 +15,7 @@ As usual, these specializations assume that the element _immediately after_ the 
 
 
 
-# Difference between the variants of the algorithm
+# Difference between the variants of the algorithm and their implementations
 
 There are two versions of this algorithm, called `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()`. 
 If you do not know which one to use then use `MergeWithOutBuffer1()`. 
@@ -34,7 +34,7 @@ The Bidirectional Iterator implementation is an altered version of the RAI imple
 
 
 
-# Implementations of the algorithms and overview of project files
+# Overview of project files
 
 Implementations of two variations of this new algorithm are found in the following files:
 
