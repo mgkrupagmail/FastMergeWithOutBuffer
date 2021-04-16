@@ -26,8 +26,8 @@ Implementations of two variations of this new algorithm are found in the followi
 The above files are the only ones that are needed in order to use these two algorithms. 
 All of the other files in this project exist to: 
 
-1. test the correctness of the algorithms (e.g. `merge_test_correctness.h` and `merge_verify_stability.h`), or to 
-2. time the algorithms and output relevant information (e.g. `merge_time.h`, `time_merge_algorithms_class.h`, `gnu_merge_without_buffer.h`, and `mins_maxs_and_lambda.h`). The majority of code in most of these files is dedicated to recording timing data, computing statistics, and/or displaying correctly formatted text output, or to
+1. test the correctness of the algorithms (e.g. `merge_test_correctness.h` and `merge_verify_stability.h`, `main.cpp`), or to 
+2. time the algorithms and output relevant information (e.g. `merge_time.h`, `time_merge_algorithms_class.h`, `gnu_merge_without_buffer.h`, and `mins_maxs_and_lambda.h`, `main.cpp`). The majority of code in most of these files is dedicated to recording timing data, computing statistics, and/or displaying correctly formatted text output, or to
 3. help test or time the algorithms (e.g. `misc_helpers.h`, `main.cpp`, `merge_without_buffer.h`). 
 
 In the future, the file `merge_without_buffer_standalone.h` will contain implementations of the primary algorithms of this project in a standalone C++ header file (i.e. no other files will be needed). 
