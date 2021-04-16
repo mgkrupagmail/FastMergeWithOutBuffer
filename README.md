@@ -23,7 +23,7 @@ Implementations of two variations of this new algorithm are found in the followi
 * `merge_without_buffer2.h`       contains the implementation of `MergeWithOutBuffer2()` and includes example calls. It extends `MergeWithOutBuffer1()` and performs more comparisons than it. 
 * `merge_without_buffer_common.h` contains helper functions that are used by both `merge_without_buffer1.h` and `merge_without_buffer2.h`.
 
-The above files are the only ones that are needed in order to use these two algorithms. 
+The above header files are the only ones that are needed in order to use these two variations of this new algorithm. 
 All of the other files in this project exist to: 
 
 1. test the correctness of the algorithms (e.g. `merge_test_correctness.h` and `merge_verify_stability.h`, `main.cpp`), or to 
