@@ -32,6 +32,8 @@ The Bidirectional Iterator implementation is an altered version of the RAI imple
 
 # Implementations of the algorithms and overview of project files
 
+Implementations of two variations of this new algorithm are found in the following files:
+
 * `merge_without_buffer1.h`       contains the implementation of `MergeWithOutBuffer1()` and includes example calls.
 * `merge_without_buffer2.h`       contains the implementation of `MergeWithOutBuffer2()` and includes example calls.
 * `merge_without_buffer_common.h` contains helper functions that are used by both `merge_without_buffer1.h` and `merge_without_buffer2.h`.
