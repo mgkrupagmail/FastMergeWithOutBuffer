@@ -11,7 +11,7 @@ Example calls can be found in the comments at the top of `merge_without_buffer1.
 
 
 
-# Difference between the algorithms
+# Difference between the variants of the algorithm
 
 There are two versions of this algorithm, called `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()`. 
 If you do not know which one to use then use `MergeWithOutBuffer1()`. 
