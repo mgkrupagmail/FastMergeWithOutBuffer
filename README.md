@@ -1,5 +1,5 @@
 # FastMergeWithOutBuffer
-This project implements a new inplace and stable recursive merge algorithm that merges two non-decreasing ranges into a single non-decreasing range with_*out*_ the use of a buffer. 
+This project implements a new inplace and stable recursive merge algorithm that merges two non-decreasing ranges into a single non-decreasing range _with**out**_ the use of a buffer. 
 It is compared to the implementation of `__merge_without_buffer` found in GNU ISO C++ Library and timed to be faster. 
 
 The C++ implementations accept iterators as inputs and they can be used various C++ standard library containers such as `std::vector`, `std::deque`, `std::list`, and others. 
