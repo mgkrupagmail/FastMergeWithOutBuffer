@@ -72,7 +72,7 @@ The algorithms are applied to:
 5. with values taken in various ranges (e.g. `int` values between some `x` and `y`; this helps to control the number of repeated values in the lists: for example, if the number of possible values between `x` and `y` is made to be small relative to the total number of items in the lists, then the randomly generated lists will necessarily have more repeated values). 
 
 For each possible combination above: 
-* Random data is generated multiple times and each aglorithm is timed on each instance of data (of course, the data is returned to its original initial state after each call so that the same data is sorted by each of the algorithms). 
+* Random data is generated multiple times and each aglorithm is timed on each instance of data (of course, the data is returned to its original initial state after each call so that the same data is sorted by each call to each algorithm). 
 * For each instance of data being merged, each algorithm is also called at least once before it starts being timed so that both the algorithm and the data are loaded into cache before timing starts (this can actually have a significant impact on timing). 
 * Each algorithm is called (and timed) multiple times on each instance of data to help reduce variance in its timing. 
 
