@@ -43,9 +43,9 @@ Everything that has just been said about `MergeWithOutBuffer1()`'s overloads can
 
 The algorithms are applied to:
 
-1. various data types (e.g. `char`, `short`, `int`, `long`, `float`, `double`, `std::string`, etc.) 
-2. with values taken in various ranges (e.g. `int` values between some `x` and `y`), and to 
-3. various containers (specifically, `std::vector`, `std::deque`, and `std::list`), and to 
+1. various containers (specifically, `std::vector`, `std::deque`, and `std::list`), and to 
+2. various data types (e.g. `char`, `short`, `int`, `long`, `float`, `double`, `std::string`, etc.) 
+3. with values taken in various ranges (e.g. `int` values between some `x` and `y`), and to 
 4. various total lengths of data (e.g. merging lists with a combined total size of (`some_constant` multipled by) c^1, c^2, c^2, ..., c^20, ..., or more items, where `c` is a float constant (such as `1.7` or `2`); here the total size increases exponentially up to a maximum size of `TestingOptions::maximum_vec_size`. These and other testing parameters (including what information is outputted) are controlled by the member variables of `struct TestingOptions`, which is found in `main.cpp`.) and to 
 5. various lengths of individual sorted lists (e.g. it times merging sorted lists of equal sizes and also times merging sorted lists where one list has an order of magnitude more items than the other list). 
 
