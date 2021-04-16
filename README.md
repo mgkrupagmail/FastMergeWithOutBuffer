@@ -74,7 +74,7 @@ The algorithms are applied to:
 For each possible combination above: 
 * Random data is generated multiple times and each aglorithm is timed on each instance of data (of course, the data is returned to its original initial state after each call so that the same data is sorted by each of the algorithms). 
 * For each instance of data being merged, each algorithm is also called at least once before it starts being timed so that both the algorithm and the data are loaded into cache before timing starts (this can actually have a significant impact on timing). 
-* Each algorithm is called multiple times on each instance of data to help reduce variance in its timing. 
+* Each algorithm is called (and timed) multiple times on each instance of data to help reduce variance in its timing. 
 
 Moreover, to the furthest extent possible (e.g. the following might not be guaranteed for non-primitive data types whose objects allocate memory on the heap), each algorithm accesses the _same memory_ (e.g. if `MergeWithOutBuffer1()` and `gnu__merge_without_buffer()` are applied to an `std::vector<int>` of size 10,000 whose data starts at location `x` in memory, then every algorithm will access the same memory that starts at location `x`). 
 This is meant to help control for possible variations in data access times that depend on where the data is stored in memory. 
