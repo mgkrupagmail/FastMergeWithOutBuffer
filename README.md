@@ -52,7 +52,11 @@ The implementations have many commented out assert()s that can significantly hel
 Each of these two algorithms has implementations specialized according to whether the iterator is a Random Access Iterator (RAI), such as `std::vector`, or a Bidirectional Iterator (bi). 
 Calls to `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()` will automatically select the most appropriate implementation; specifically, if the iterator is a RAI then the RAI version will be selected and otherwise the Bidirectional Iterator version will be selected. 
 The RAI and Bidirectional Iterator implementations of these algorithms are nearly identical and for someone trying to understand these new algorithms, it is recommended that the RAI version be studied first because it is a simpler implmementation. 
-The Bidirectional Iterator implementation is an altered version of the RAI implementation, changed by replacing all Random Access operations with optimized equivalent Bidirectional Iterator code. 
+The Bidirectional Iterator implementation is an altered version of the RAI implementation, changed by replacing Random Access operations with optimized equivalent Bidirectional Iterator code. 
+Knowing the distance (i.e. the number of objects) between two given iterators is an important part of this new algorithm and most of the optimizations introduced into the Bidirection Iterator implementation revolve around this. 
+These optimization are important because the Bidirection Iterator implementation will be used when the iterators point to a objects in linked lists such as `std::list<int>`, for example. 
+Computing the distance between iterators in a linked list is an O(N) operation (version O(1) for RAIs) so the Bidirectional Iterator implementation is designed to minimize the number times that this computation is done. 
+There can even be as few as zero calls to `std::distance()` if the lengths of the sorted linked lists are known before hand and passed to an appropriate overload; otherwise, their lengths will be computed at the start of the call. 
 
 
 
