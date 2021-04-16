@@ -58,8 +58,8 @@ Knowing the `std::distance()` (i.e. the number of objects) between two given ite
 These optimization are important because the BI implementation will be used when the iterators point to a objects in linked lists such as `std::list<int>`, for example. 
 Computing the distance between iterators in a linked list is an O(N) operation on average (versus O(1) for RAIs) so the BI implementation is designed to minimize the number calls to `std::distance()`. 
 There can even be as few as zero calls to `std::distance()` if the lengths of the sorted linked lists are known before hand _and_ passed to an appropriate overload; otherwise, their lengths will be computed at the start of the initial call. 
-However, even if zero calls are made to `std::distance()`, the Big O() time complexity of these algorithms when they is applied to linked lists will nevertheless strictly greater than when they are applied to Random Access Iterators. 
-But the Big O() time complexities of the RAI and BI implementations are the same when RAI iterators are passed to both (e.g. if iterators to `std::vector`s were passed as arguments to these two implementations; of course, for calls to `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()`, the RAI implementation will be used when `std::vector` iterators are passed). 
+However, even if zero calls are made to `std::distance()`, the Big O() time complexity of these algorithms when they are applied to linked lists will nevertheless be strictly greater than when they are applied to Random Access Iterators. 
+But the Big O() time complexities of the RAI and BI implementations are the same when RAI iterators are passed to both (e.g. if iterators to `std::vector`s were to be passed as arguments to these two implementations; of course, for calls to `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()` in particular, the RAI implementation will be used when `std::vector` iterators are passed). 
 
 
 
