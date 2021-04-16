@@ -1,7 +1,7 @@
 # FastMergeWithOutBuffer
 This project implements a new inplace and stable recursive merge algorithm that merges two non-decreasing ranges into a single non-decreasing range with_*out*_ the use of a buffer. It is compared to the implementation of `__merge_without_buffer` found in GNU ISO C++ Library and timed to be faster. 
 
-The C++ implementations are designed to work with iterators and they can be used various C++ standard library containers such as `std::vector`, `std::deque`, `std::list`, and others. They also allow for custom comparison functions to be used. The two sorted lists that are to be merged may belong to two different objects (for example, to two distinct `std::vector<int>` objects: `left_sorted_data` and `right_sorted_data`). 
+The C++ implementations are designed to work with iterators and they can be used various C++ standard library containers such as `std::vector`, `std::deque`, `std::list`, and others. They also allow for custom comparison functions to be used. The two sorted lists that are to be merged may belong to two different objects (for example, to two distinct `std::vector<int>` objects: `left_sorted_data` and `right_sorted_data`). Example calls can be found in `merge_without_buffer1.h` and `merge_without_buffer2.h`, which contain C++ implementations of two variations of this new algorithm. 
 
 
 
