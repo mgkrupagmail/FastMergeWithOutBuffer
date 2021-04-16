@@ -23,14 +23,14 @@ If you do not know which one to use then use `MergeWithOutBuffer1()`.
 If this is _not_ the case (i.e. if there are relatively few values that are repeated in the lists, which is often the case with floating-point data for instance) then there is usually little difference in their execution times, although `MergeWithOutBuffer1()` may sometimes outperform `MergeWithOutBuffer2()`. 
 Because `MergeWithOutBuffer2()` performs more object comparisons, `MergeWithOutBuffer1()` is more likely to outperform it if the computational cost of comparing two objects is high enough and if the two lists have enough objects that the algorithms' initialization times do not dominate their total run times. 
 
-Each of these two algorithms has implementations specialized according to whether the iterator is a Random Access Iterator (RAI), such as `std::vector`, or a Bidirectional Iterator (bi). 
-Calls to `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()` will automatically select the most appropriate implementation; specifically, if the iterator is a RAI then the RAI version will be selected and otherwise the Bidirectional Iterator version will be selected. 
-
 `MergeWithOutBuffer2()` is an extension of the `MergeWithOutBuffer1()` algorithm. `MergeWithOutBuffer1()` contains the "minimum" needed in order to implement this new merge algorithm. 
 If someone is trying to understand how these algorithms work, then they should start by reading the implementation of `MergeWithOutBuffer1()` (instead of `MergeWithOutBuffer2()`). 
 The implementations have many commented out assert()s that can significantly help in understanding these algorithms. 
-The RAI and Bidirectional Iterator implementations of these algorithms are nearly identical and it is recommended that the RAI version be studied first. 
-The Bidirectional Iterator implementation is an altered version of the RAI implementation, changed by replacing all Random Access operations with equivalent Bidirectional Iterator code. 
+
+Each of these two algorithms has implementations specialized according to whether the iterator is a Random Access Iterator (RAI), such as `std::vector`, or a Bidirectional Iterator (bi). 
+Calls to `MergeWithOutBuffer1()` and `MergeWithOutBuffer2()` will automatically select the most appropriate implementation; specifically, if the iterator is a RAI then the RAI version will be selected and otherwise the Bidirectional Iterator version will be selected. 
+The RAI and Bidirectional Iterator implementations of these algorithms are nearly identical and for someone trying to understand threse new algorithms, it is recommended that the RAI version be studied first because it is simpler. 
+The Bidirectional Iterator implementation is an altered version of the RAI implementation, changed by replacing all Random Access operations with optimized equivalent Bidirectional Iterator code. 
 
 
 
