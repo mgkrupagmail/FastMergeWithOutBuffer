@@ -6,7 +6,7 @@ The C++ implementations accept iterators as inputs and they can be used with var
 Example calls can be found in the comments at the top of `merge_without_buffer1.h` and `merge_without_buffer2.h`, which contain C++ implementations of two variations of this new algorithm. 
 
 There are several overloads. 
-There is always one overload that accepts a custom comparison operator and another that does not. 
+There is always one overload that accepts a custom comparison operator and another that does not. The one that does not is a specialization of the former that uses the default comparison operator. 
 Half of the overloads accept as input four interators to two sorted lists that (potentially) belong to two different objects (for example, to two distinct `std::vector<int>` objects: `left_sorted_data` and `right_sorted_data`). 
 
 The other overloads accept as input three iterators that are assumed to all point to a single object's data. 
