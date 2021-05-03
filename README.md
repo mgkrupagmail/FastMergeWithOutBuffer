@@ -26,8 +26,8 @@ Implementations of two variations of this new algorithm are found in the followi
 The above header files are the only ones that are needed in order to use these two variations of this new algorithm. 
 All of the other files in this project exist to do the following: 
 
-1. Test the correctness of the algorithms (e.g. `merge_test_correctness.h`, `merge_verify_stability.h`, and `main.cpp`). 
-2. Time the algorithms and output relevant information (e.g. `merge_time.h`, `time_merge_algorithms_class.h`, `gnu_merge_without_buffer.h`, `mins_maxs_and_lambda.h`, and `main.cpp`). The majority of code in most of these files is dedicated to recording timing data, computing statistics, and/or displaying correctly formatted text output. 
+1. Test the correctness of the algorithms (e.g. `merge_test_correctness.h`, `merge_verify_stability.h`, `settings_for_timing_and_testing_correctness.h`, and `main.cpp`). 
+2. Time the algorithms and output relevant information (e.g. `merge_time.h`, `time_merge_algorithms_class.h`, `gnu_merge_without_buffer.h`, `mins_maxs_and_lambda.h`, `settings_for_timing_and_testing_correctness.h`, and `main.cpp`). The majority of code in most of these files is dedicated to recording timing data, computing statistics, and/or displaying correctly formatted text output. 
 3. Help test or time the algorithms (e.g. `misc_helpers.h`, `merge_without_buffer.h`, and `main.cpp`). 
 
 In the future, the file `merge_without_buffer_standalone.h` will contain implementations of the primary algorithms of this project in a standalone C++ header file (i.e. no other files will be needed). 
@@ -83,7 +83,7 @@ The algorithms are applied to:
 
 1. various containers (specifically, `std::vector`, `std::deque`, and `std::list`), and to 
 2. various data types (e.g. `char`, `short`, `int`, `long`, `float`, `double`, `std::string`, etc.), and to 
-3. various total lengths of data (e.g. merging lists with a combined total size of (`some_constant` multipled by) c^1, c^2, c^2, ..., c^20, ..., or more items, where `c` is a float constant (such as `1.7` or `2`); here the total size increases exponentially up to a maximum size of `TestingOptions::maximum_vec_size`. These and other testing parameters (including what text information is outputted) are controlled by the member variables of `struct TestingOptions`, which is found in `main.cpp`.), and to 
+3. various total lengths of data (e.g. merging lists with a combined total size of (`some_constant` multipled by) c^1, c^2, c^2, ..., c^20, ..., or more items, where `c` is a float constant (such as `1.7` or `2`); here the total size increases exponentially up to a maximum size of `TestingOptions::maximum_vec_size`. These and other testing parameters (including what text information is outputted) are controlled by the member variables of `struct TestingOptions`, which is found in `settings_for_timing_and_testing_correctness.h`.), and to 
 4. various lengths of individual sorted lists (e.g. it times merging sorted lists of equal sizes and also times merging sorted lists where one list has an order of magnitude more items than the other list), 
 5. with values taken in various ranges (e.g. `int` values between some `x` and `y`; this helps to control the number of repeated values in the lists: for example, if the number of possible values between `x` and `y` is made to be small relative to the total number of items in the lists, then the randomly generated lists will necessarily have more repeated values). 
 
