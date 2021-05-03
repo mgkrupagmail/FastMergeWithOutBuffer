@@ -1,8 +1,9 @@
-/merge_without_buffer_standalone.h
-/merge_without_buffer_trim1.h
-/merge_without_buffer_trim2.h
-/merge_without_buffer_trim3.h
-/merge_common.h
+/obsolete/merge_without_buffer_standalone.h
+/obsolete/merge_without_buffer_trim1.h
+/obsolete/merge_without_buffer_trim2.h
+/obsolete/merge_without_buffer_trim3.h
+/obsolete/merge_common.h
+/obsolete/*
 
 # Prerequisites
 *.d
