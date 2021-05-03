@@ -137,7 +137,7 @@
 #include "merge_without_buffer1.h"
 #include "merge_without_buffer2.h"
 
-#include "merge_verify_stability.h"
+#include "TimingAndTestingCorrectness/merge_verify_stability.h"
 
 static const std::chrono::nanoseconds zero_nano{0};
 
