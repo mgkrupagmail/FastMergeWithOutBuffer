@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-#include "misc_helpers.h"
+#include "../misc_helpers.h"
 
 /* Helper function for MergeTwoSortedSubvectorsTestCorrectness().
  */
