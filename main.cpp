@@ -48,7 +48,7 @@
 
 /*
 To customize the testing and timing of these new algorithms, see the file:
-settings_for_timing_and_testing_correctness.h
+main_timing_verifying_with_settings.h
 located in the folder:
 TimingAndTestingCorrectness/
 and change the variable in the TestingOptions class.
