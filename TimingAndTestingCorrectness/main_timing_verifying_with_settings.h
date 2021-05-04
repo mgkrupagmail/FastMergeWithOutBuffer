@@ -1,5 +1,5 @@
 /*
- * settings_for_timing_and_testing_correctness.h
+ * main_timing_verifying_with_settings.h
  *
  *  Created on: May 3, 2021
  *      Author: diagoras
