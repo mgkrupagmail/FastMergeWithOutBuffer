@@ -335,6 +335,57 @@ std::string GetFileIntro(const TestingOptions &to, T value_lower_bound,
   return strm.str();
 }
 
+
+template<typename T, typename ValueType>
+std::string TimeAndTestMergeFunctionsGetInfo(const TestingOptions &to,
+                                             bool print_denormal_info = false) {
+  auto type_string = GetTypeNameString<ValueType>();
+  std::ostringstream osstrm;
+  osstrm << to.intro_string;
+  osstrm << "ValueType         = " << type_string << '\n';
+  osstrm << "sizeof(ValueType) = " << sizeof(ValueType) << "\n";
+  if (to.comp_info_string_.empty())
+    osstrm << "Using default operator<().";
+  else
+    osstrm << to.comp_info_string_;
+  if (print_denormal_info) {
+    osstrm << "Merging " << type_string << "s with denormal numbers ";
+    if (to.use_denormal_numbers)
+      osstrm << "ALLOWED\n";
+    else
+      osstrm << "NOT allowed\n";
+    if (!to.use_denormal_numbers)
+      osstrm << " - NO denormal numbers were used in the ranges.\n";
+  }
+  osstrm << "\n";
+  return osstrm.str();
+}
+
+std::string GetPathThatWillPrefixAllOutputFileNames() {
+    //out_file_path_base will be the prefix used for all output files' names
+    std::string out_file_path_base = std::string("Timings_")
+                        + std::string("CompileDateTime_")
+                        + std::string(__DATE__) + std::string("_")
+                        + std::string(__TIME__) + std::string("__")
+                        + std::string("ExecDateTime_")
+                        + GetCurrentTimeString() + std::string("__");
+    //Replace each space with a dash - Similarly, replace characters
+    // that might not be allowed in file names (of certain OSs)
+    // with other characters. This is here to improve portability
+    // of the output files.
+    auto replace_characters = [](char c) {
+        if (c == ':' || c == ',')
+            return '_';
+        else if (c == ' ')
+            return '-';
+        else
+            return c;
+    };
+    std::transform(out_file_path_base.begin(), out_file_path_base.end(),
+                   out_file_path_base.begin(), replace_characters);
+    return out_file_path_base;
+}
+
 //Helper for TimeAndTestMergeFunctionsWithGivenValuesAndContainer().
 std::string GetMergeGrandTotalsString(Timings &total_times,
                                       TestingOptions &to) {
@@ -421,31 +472,6 @@ int TimeAndTestMergeFunctionsWithGivenValuesAndContainer(T value_lower_bound,
   to.PrintString(GetMergeGrandTotalsString(total_times, to));
   times_out = total_times;
   return 0;
-}
-
-template<typename T, typename ValueType>
-std::string TimeAndTestMergeFunctionsGetInfo(const TestingOptions &to,
-                                             bool print_denormal_info = false) {
-  auto type_string = GetTypeNameString<ValueType>();
-  std::ostringstream osstrm;
-  osstrm << to.intro_string;
-  osstrm << "ValueType         = " << type_string << '\n';
-  osstrm << "sizeof(ValueType) = " << sizeof(ValueType) << "\n";
-  if (to.comp_info_string_.empty())
-    osstrm << "Using default operator<().";
-  else
-    osstrm << to.comp_info_string_;
-  if (print_denormal_info) {
-    osstrm << "Merging " << type_string << "s with denormal numbers ";
-    if (to.use_denormal_numbers)
-      osstrm << "ALLOWED\n";
-    else
-      osstrm << "NOT allowed\n";
-    if (!to.use_denormal_numbers)
-      osstrm << " - NO denormal numbers were used in the ranges.\n";
-  }
-  osstrm << "\n";
-  return osstrm.str();
 }
 
 template<typename T, typename ValueType,
@@ -862,31 +888,6 @@ int TimeAndTestMergeFunctionsOnGivenContainerType(TestingOptions &to,
     f.flush();
   }
   return 0;
-}
-
-std::string GetPathThatWillPrefixAllOutputFileNames() {
-    //out_file_path_base will be the prefix used for all output files' names
-    std::string out_file_path_base = std::string("Timings_")
-                        + std::string("CompileDateTime_")
-                        + std::string(__DATE__) + std::string("_")
-                        + std::string(__TIME__) + std::string("__")
-                        + std::string("ExecDateTime_")
-                        + GetCurrentTimeString() + std::string("__");
-    //Replace each space with a dash - Similarly, replace characters
-    // that might not be allowed in file names (of certain OSs)
-    // with other characters. This is here to improve portability
-    // of the output files.
-    auto replace_characters = [](char c) {
-        if (c == ':' || c == ',')
-            return '_';
-        else if (c == ' ')
-            return '-';
-        else
-            return c;
-    };
-    std::transform(out_file_path_base.begin(), out_file_path_base.end(),
-                   out_file_path_base.begin(), replace_characters);
-    return out_file_path_base;
 }
 
 
