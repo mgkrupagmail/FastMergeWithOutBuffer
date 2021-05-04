@@ -315,10 +315,9 @@ int TestingOptions::default_line_length_ = 100;
 
 #include "time_merge_algorithms_class.h"
 
-#include "misc_helpers.h"
+#include "../misc_helpers.h"
 
-#include "merge_common.h"
-#include "merge_without_buffer.h"
+#include "../merge_without_buffer.h"
 #include "merge_test_correctness.h"
 #include "merge_verify_stability.h"
 #include "merge_time.h"
