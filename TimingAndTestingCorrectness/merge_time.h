@@ -139,8 +139,6 @@
 
 #include "../TimingAndTestingCorrectness/merge_verify_stability.h"
 
-#include "TimingAndTestingCorrectness/merge_verify_stability.h"
-
 static const std::chrono::nanoseconds zero_nano{0};
 
 template<typename ForwardIterator1, typename ForwardIterator2>
