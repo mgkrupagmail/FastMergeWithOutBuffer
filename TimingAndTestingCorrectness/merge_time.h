@@ -133,9 +133,11 @@
 #include <vector>
 
 #include "gnu_merge_without_buffer.h"
-#include "merge_without_buffer.h"
-#include "merge_without_buffer1.h"
-#include "merge_without_buffer2.h"
+#include "../merge_without_buffer.h"
+#include "../merge_without_buffer1.h"
+#include "../merge_without_buffer2.h"
+
+#include "../TimingAndTestingCorrectness/merge_verify_stability.h"
 
 #include "TimingAndTestingCorrectness/merge_verify_stability.h"
 
