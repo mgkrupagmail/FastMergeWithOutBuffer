@@ -40,15 +40,16 @@
 
 #include "misc_helpers.h"
 
-#include "merge_common.h"
+#include "merge_without_buffer_common.h"
 #include "merge_without_buffer.h"
+#include "merge_without_buffer2.h"
 
-#include "TimingAndTestingCorrectness/settings_for_timing_and_testing_correctness.h"
+#include "TimingAndTestingCorrectness/main_timing_verifying_with_settings.h"
 
 /*
-To customize the testing and timing of these new algorithms, see the file: 
-settings_for_timing_and_testing_correctness.h 
-located in the folder: 
+To customize the testing and timing of these new algorithms, see the file:
+settings_for_timing_and_testing_correctness.h
+located in the folder:
 TimingAndTestingCorrectness/
 and change the variable in the TestingOptions class.
 */
