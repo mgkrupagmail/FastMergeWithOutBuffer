@@ -151,6 +151,8 @@
 #ifndef MERGE_WITHOUT_BUFFER_H_
 #define MERGE_WITHOUT_BUFFER_H_
 
+#include "merge_without_buffer_common.h"
+#include "merge_without_buffer.h"
 #include "merge_without_buffer2.h"
 
 //Dispatch function
